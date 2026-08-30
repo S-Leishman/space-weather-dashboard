@@ -1,0 +1,63 @@
+# ── Credentials — never commit ────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets.toml
+.streamlit/secrets.toml
+credentials.json
+
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ── Virtual environments ─────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Testing and coverage ─────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.ruff_cache/
+
+# ── Notebooks ────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ── Generated data ───────────────────────────────────────────────────────────
+# Model artifacts in dashboard/models/ ARE tracked intentionally: the prototype
+# ships with them so it runs on a fresh clone without a training step.
+data/raw/
+data/interim/
+data/processed/
+*.parquet
+!dashboard/models/*.joblib
+
+# ── Runtime logs ─────────────────────────────────────────────────────────────
+*.log
+streamlit_stdout.log
+
+# ── OS and editor ────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp

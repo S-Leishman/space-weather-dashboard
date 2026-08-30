@@ -1,0 +1,10 @@
+name = "space-weather-dashboard"
+version = "1.0.0"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short -q"
+
+[tool.coverage.run]
+source = ["dashboard"]
+omit = ["*/tests/*", "*/__pycache__/*"]

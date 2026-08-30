@@ -1,0 +1,48 @@
+{
+  "filename": "features_v1.parquet",
+  "sha256": "223c8518985b13e35ba47b522557f15de205e0d9e29e8888d1178a64c768059f",
+  "created_at": "2026-08-30T22:54:54.853087+00:00",
+  "feature_count": 15,
+  "row_count": 608,
+  "labeled_row_count": 90,
+  "ibm_bob_assisted": true,
+  "version": 1,
+  "schema_version": "aevion.feature-provenance.v1",
+  "dataset_id": "swl-challenge-synthetic-v1",
+  "label_semantics": "launch_go is a synthetic scaffold label drawn independently of the space-weather features (challenge demo dataset, no real launch outcomes merged). No model can have genuine predictive skill on it; ROC-AUC near 0.5 is the expected and correct result.",
+  "daily_master_sha256": "2b2bd93a4fa86dcee167af67dd4d68af2992e5602ee8eb487ab56f80035d0bac",
+  "feature_manifest_sha256": "b46f389f2eea17daa06a34333371ad3562862a595d1de7d6892817aa531ef581",
+  "feature_names": [
+    "cme_arrival_score",
+    "day_cos",
+    "day_sin",
+    "flux_3d_avg",
+    "flux_7d_avg",
+    "gst_level",
+    "hour_cos",
+    "hour_sin",
+    "kp_3d_avg",
+    "kp_7d_avg",
+    "kp_lag1",
+    "kp_lag3",
+    "kp_lag7",
+    "mclass_72h",
+    "xclass_72h"
+  ],
+  "generated_at": "2026-08-30T23:00:11.108407+00:00",
+  "generated_by": "scripts/regenerate_metrics.py",
+  "training_artifacts": {
+    "logistic_regression": "455274f4ee0313bcd65ddb3857e38384b35dd4c021a7d729dbb604be1956c8f3",
+    "random_forest": "9f3611e9db63d158a34c1292d3cb2696bf582f7336d732ff1fee55816d116b85",
+    "xgboost": "19edd364420c595e2234911273180a7c19a568dc461053cf1d4f80d33625e65b"
+  },
+  "validation": {
+    "n_total_labelled": 90,
+    "n_train": 72,
+    "n_validation": 18,
+    "n_validation_positive": 12,
+    "n_validation_negative": 6,
+    "test_size": 0.2,
+    "random_state": 42
+  }
+}

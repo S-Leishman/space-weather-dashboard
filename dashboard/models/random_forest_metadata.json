@@ -1,0 +1,40 @@
+{
+  "name": "random_forest",
+  "algorithm": "RandomForestClassifier",
+  "feature_names": [
+    "kp_3d_avg",
+    "kp_7d_avg",
+    "flux_3d_avg",
+    "flux_7d_avg",
+    "kp_lag1",
+    "kp_lag3",
+    "kp_lag7",
+    "xclass_72h",
+    "mclass_72h",
+    "cme_arrival_score",
+    "gst_level",
+    "day_sin",
+    "day_cos",
+    "hour_sin",
+    "hour_cos"
+  ],
+  "hyperparameters": {
+    "max_depth": 8,
+    "min_samples_split": 5,
+    "n_estimators": 100
+  },
+  "cv_best_score": 0.51,
+  "accuracy": 0.5556,
+  "precision": 0.625,
+  "recall": 0.8333,
+  "f1": 0.7143,
+  "roc_auc": 0.4861,
+  "log_loss": 0.7037,
+  "n_validation": 18,
+  "n_validation_positive": 12,
+  "n_validation_negative": 6,
+  "proba_column": 1,
+  "model_file": "C:\\Users\\Scott\\Desktop\\Aevion LLC\\space-weather-dashboard\\dashboard\\models\\random_forest.joblib",
+  "sha256": "9f3611e9db63d158a34c1292d3cb2696bf582f7336d732ff1fee55816d116b85",
+  "saved_at": "2026-08-30T22:55:09.069837+00:00"
+}
