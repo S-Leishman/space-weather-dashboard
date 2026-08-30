@@ -16,11 +16,24 @@ A key finding that bounds the entire risk surface:
 | Is `space-weather-dashboard/` its own git repository? | **No.** No `.git` directory exists inside it. | `Test-Path .git` → `False` |
 | Is it tracked by the parent estate repository? | **No.** Zero files tracked, zero commits. | `git ls-files space-weather-dashboard` → 0 lines; `git log -- space-weather-dashboard` → 0 lines |
 | Does any git history for this application exist anywhere? | **No.** | `git log --all --oneline -- "space-weather-dashboard/**"` → 0 lines |
-| Does a GitHub repository for it exist? | **No.** | `gh repo list S-Leishman --limit 100` → no `space-weather-dashboard` entry |
+| Did a GitHub repository for it exist at scan time? | **No.** | `gh repo list S-Leishman --limit 100` → no entry; `gh api repos/S-Leishman/space-weather-dashboard` → **HTTP 404** |
 
-**Consequence:** there is **no git history to scan** because none has ever been created, and there is **no existing public exposure**. The classic failure mode — a credential removed from the working tree but still reachable in an old commit — is structurally impossible here. The first commit of this repository will be its entire history, and it will be made from the tree scanned below.
+**Consequence:** there was **no git history to scan** at scan time, because none had ever been created, and there was **no existing public exposure**. The classic failure mode — a credential removed from the working tree but still reachable in an old commit — is structurally impossible here.
 
-This is the strongest possible position for a public release, and it must be preserved: the initial commit must be made *after* the hygiene item below is cleared, and must not include any file excluded by `.gitignore`.
+### State after this lane
+
+The scan above was performed on the bare working tree. History was then created *from that scanned tree*:
+
+| | |
+|---|---|
+| Local repository | Initialized on branch `main` |
+| Initial commit | `f5ac06c` — 46 files, the entire history of this repository |
+| Excluded by `.gitignore` | `__pycache__/`, `.pytest_cache/`, `streamlit_stdout.log` — verified absent from the commit |
+| Remote | `https://github.com/S-Leishman/space-weather-dashboard` — **PRIVATE** and **EMPTY** (push pending an OAuth scope grant) |
+
+`streamlit_stdout.log`, a runtime log produced during local testing, was scanned separately before being excluded — 701 bytes, no credential, no personal path. It is gitignored so it cannot enter history later.
+
+**The single commit is the complete history, and it was made from the tree scanned above.** That property is what makes the eventual public release defensible, and it must be preserved: any credential committed from here forward would remain reachable in history even after deletion from the working tree.
 
 ## What was scanned
 

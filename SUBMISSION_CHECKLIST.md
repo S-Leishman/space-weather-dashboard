@@ -13,7 +13,7 @@ Every row states a real status backed by an artifact a reader can open. Nothing 
 |---|---|---|---|
 | 1 | Working prototype | **HOLD** | Runs and all 59 tests pass, but known rendering and metrics defects are under repair. See row 1 detail |
 | 2 | IBM SkillsBuild activity completion | **HOLD_EVIDENCE** | **Owner-only.** No completion evidence located. A prior Gmail search found no completion email. Not asserted as done |
-| 3 | Public GitHub repository | **NOT_STARTED** | No repository exists — `gh api repos/S-Leishman/space-weather-dashboard` → **HTTP 404**. Owner-gated |
+| 3 | Public GitHub repository | **HOLD** | A **PRIVATE** repository now exists at `S-Leishman/space-weather-dashboard`, but it is **empty** — the first push was rejected for a missing OAuth scope. See row 3 detail. Making it public is owner-gated |
 | 4 | README with all required sections | **PASS** | [`README.md`](README.md) — all five sections present. See section map below |
 | 5 | Published challenge project page | **NOT_STARTED** | **Owner-only.** Requires the public repository URL (row 3) and the video URL (row 6) |
 | 6 | Public video, ≤ 3 minutes | **NOT_STARTED** | **Owner-only.** Not recorded. Out of scope for this lane by instruction |
@@ -29,6 +29,42 @@ Every row states a real status backed by an artifact a reader can open. Nothing 
 The software path is verified: the Streamlit app serves HTTP 200 locally, the live NASA DONKI fetch returns data, all three model artifacts load and return probabilities, and 59 of 59 tests pass (`python -m pytest tests/ -q`, re-confirmed 2026-08-30).
 
 It is **not** marked PASS because a page can load while displaying a wrong value. Defects under active repair at the time of writing include a raw-JavaScript rendering leak, an inverted probability column, ROC-AUC computed from hard labels instead of probabilities, a blank feature-importance chart, and the SHAP panel. This row flips to PASS only when those fixes land and an independent verifier confirms a correct run — not merely a run.
+
+### Row 3 detail — repository state and the push blocker
+
+Local git repository initialized and committed. Remote created **private** and wired as `origin`, but **nothing has been pushed yet**.
+
+```
+$ gh repo view S-Leishman/space-weather-dashboard --json visibility,isEmpty
+{"visibility":"PRIVATE","isEmpty":true}
+```
+
+| | |
+|---|---|
+| Local branch | `main` (chosen so `.github/workflows/ci.yml` will actually trigger — see CI-1) |
+| Local HEAD | `f5ac06c` — `chore(release): initialize repository with release infrastructure` |
+| Files committed | 46 · working tree clean · no caches, logs, or credentials |
+| Remote | `https://github.com/S-Leishman/space-weather-dashboard` — **PRIVATE, EMPTY** |
+
+**Blocker — missing `workflow` OAuth scope.** The push was rejected by GitHub:
+
+```
+! [remote rejected] HEAD -> main
+  (refusing to allow an OAuth App to create or update workflow
+   .github/workflows/ci.yml without `workflow` scope)
+```
+
+The authenticated `gh` token holds `gist`, `read:org`, and `repo`, but not `workflow`, so it may not create a file under `.github/workflows/`. This is a GitHub-side protection, not a repository misconfiguration, and nothing is wrong with the commit.
+
+**Resolution is owner-only** because granting the scope requires an interactive browser authorization:
+
+```powershell
+gh auth refresh -h github.com -s workflow
+cd "C:\Users\Scott\Desktop\Aevion LLC\space-weather-dashboard"
+git push -u origin main
+```
+
+The repository stays private through this step. Roughly 2 minutes.
 
 ### Row 2 detail — IBM SkillsBuild
 
@@ -99,9 +135,10 @@ Only Scott can perform these. Everything up to the irreversible line has been pr
 | Step | Action | Why only the owner | Est. |
 |---|---|---|---|
 | 1 | **Verify IBM SkillsBuild completion** in the SkillsBuild portal; capture a screenshot | Personal account credentials. Hard eligibility gate | 5 min |
-| 2 | **Confirm the application fixes have landed** and an independent verifier reports a correct run | Do not publish a build that renders raw JavaScript | — |
-| 3 | **Authorize the re-run secret scan** result (procedure in [`SECRET_SCAN.md`](SECRET_SCAN.md)) | Code changed after the original scan | 2 min |
-| 4 | **Authorize repository creation and public visibility** | **IRREVERSIBLE.** A public repository can be cloned and cached within seconds; reverting visibility does not recall the copies | 3 min |
+| 2 | **Grant the `workflow` OAuth scope and push** — `gh auth refresh -h github.com -s workflow` then `git push -u origin main`. Repository stays private | Interactive browser authorization. See row 3 detail | 2 min |
+| 3 | **Confirm the application fixes have landed** and an independent verifier reports a correct run | Do not publish a build that renders raw JavaScript | — |
+| 4 | **Authorize the re-run secret scan** result (procedure in [`SECRET_SCAN.md`](SECRET_SCAN.md)) | Code changed after the original scan | 2 min |
+| 4a | **Flip the repository to public** — `gh repo edit S-Leishman/space-weather-dashboard --visibility public --accept-visibility-change-consequences` | **IRREVERSIBLE.** A public repository can be cloned and cached within seconds; reverting visibility does not recall the copies | 1 min |
 | 5 | **Confirm CI is green** on the public repository | Verify before claiming | 3 min |
 | 6 | **Deploy to Streamlit Community Cloud** — steps 5–8 of [`DEPLOYMENT.md`](DEPLOYMENT.md) | Requires his GitHub-linked Streamlit account | 10 min + build |
 | 7 | **Verify the live URL in a browser** — every page, no raw JavaScript, charts draw, live data returns | This is the last chance to catch a broken public deployment | 5 min |
