@@ -26,7 +26,7 @@ from typing import Any
 import pandas as pd
 
 FIXTURE_PATH = (
-    Path(__file__).resolve().parents[3]
+    Path(__file__).resolve().parents[2]
     / "04_EVIDENCE" / "lanes" / "ibm-donki-replay-001" / "DONKI_REPLAY_FIXTURE.json"
 )
 

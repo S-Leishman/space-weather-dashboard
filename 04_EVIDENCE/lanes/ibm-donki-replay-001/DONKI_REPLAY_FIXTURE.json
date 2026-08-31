@@ -1,0 +1,546 @@
+{
+  "fixture_id": "IBM-DONKI-REPLAY-001",
+  "fixture_version": "1.0.0",
+  "frozen": true,
+  "generated_at_utc": "2026-08-31T05:06Z",
+  "description": "Frozen replay fixture for the 2026-08-25 -> 2026-08-28 DONKI event cluster. Real retrieved records, not synthetic. Demonstrates: observations -> multiple forecast producers -> conflict and uncertainty -> evidence normalization -> verification -> mission risk state -> human authority -> post-event replay.",
+
+  "provenance_boundary": {
+    "source": "NASA CCMC DONKI",
+    "classification": "Experimental research information",
+    "operational_forecast_authority": "NOAA SWPC",
+    "note": "DONKI is NOT the official U.S. operational space weather forecast. Aevion retains this source authority label rather than flattening the record into 'trusted data'."
+  },
+
+  "claim_ceiling": "Aevion can preserve competing forecasts, their actual model inputs, later observations, provenance, and unresolved attribution without collapsing uncertainty into a false single answer.",
+
+  "refused_claims": [
+    {
+      "claim": "Our model predicted the August 28 impact to within three minutes.",
+      "status": "REFUSED",
+      "reason": "Aevion produced no forecast for this event. Separately, the owner-supplied 08:33Z CCMC aggregate figure could not be found in any retrieved record and is contradicted by the live CCMC value of 09:45Z (see contradicted_inputs)."
+    },
+    {
+      "claim": "The ~55-minute agreement of WSA-ENLIL run 48261 demonstrates predictive accuracy or superiority.",
+      "status": "REFUSED",
+      "reason": "The 55-minute nominal difference sits inside a published +/-7 hour uncertainty band. A nominal value falling near the observation inside a 14-hour-wide band is not a precision result."
+    },
+    {
+      "claim": "Aevion predicted the event or produced any of these forecasts.",
+      "status": "REFUSED",
+      "reason": "Every forecast row here was produced by a third-party institution and retrieved from NASA CCMC. Aevion's role is preservation, normalization, and verification only."
+    },
+    {
+      "claim": "CME X caused the 2026-08-28T08:30Z shock.",
+      "status": "REFUSED",
+      "reason": "NASA's own IPS record hedges: the signature 'may be the arrival of' three different CMEs, with a coronal hole high speed stream possibly combined. No unique causal attribution exists in the source."
+    },
+    {
+      "claim": "DONKI is the official U.S. operational space weather forecast.",
+      "status": "REFUSED",
+      "reason": "CCMC explicitly directs operational users to NOAA SWPC and labels DONKI content 'Experimental Research Information'."
+    }
+  ],
+
+  "contradicted_inputs": [
+    {
+      "owner_supplied_value": "CCMC aggregate of methods predicted arrival 08:33Z",
+      "retrieved_value": "2026-08-28T09:45Z (Average of all Methods, confidence 80.0%, Kp 3.83333-5.33333, difference +1.25 h)",
+      "verdict": "CONTRADICTED",
+      "evidence": "https://webtools.ccmc.gsfc.nasa.gov/CMEscoreboard/prediction/detail/5728",
+      "note": "The string '08:33' does not appear anywhere in the retrieved CME Scoreboard page. The fixture uses the retrieved 09:45Z value. This is the specific figure behind the forbidden 'within three minutes' claim."
+    }
+  ],
+
+  "nodes": {
+    "FLR": [
+      {
+        "id": "FLR-20260825-1002",
+        "type": "FLR",
+        "class": "M6.9",
+        "peak_time_utc": "2026-08-25T10:02Z",
+        "source_region": "AR 14513",
+        "observed_in": ["SDO AIA 131"],
+        "evidence_grade": "PROVEN",
+        "evidence_source": "ccmc_scoreboard_detail_5728_cme_note"
+      }
+    ],
+    "CME": [
+      {
+        "id": "2026-08-25T10:38:00-CME-001",
+        "type": "CME",
+        "start_time_utc": "2026-08-25T10:38Z",
+        "donki_id": 48246,
+        "source_region": "AR 14513",
+        "observed_in": ["STEREO A COR2", "SOHO LASCO C2/C3", "GOES CCOR-1", "SDO AIA 171/304", "STEREO A EUVI 195/304"],
+        "note": "Visibly deflected by a nearby large coronal hole.",
+        "link": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/CME/48246/-1",
+        "evidence_grade": "PROVEN"
+      },
+      {
+        "id": "2026-08-25T12:53:00-CME-001",
+        "type": "CME",
+        "start_time_utc": "2026-08-25T12:53Z",
+        "donki_id": 48256,
+        "source_region": "filament eruption centered ~N03E18; nearby but NOT associated with AR 14513",
+        "associated_flare": "C4.7 peaking 2026-08-25T12:58Z",
+        "note": "Significantly overlaps with prior CME 2026-08-25T10:38Z. Not seen in SOHO LASCO C2/C3 due to a DSN gap.",
+        "link": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/CME/48256/-1",
+        "evidence_grade": "PROVEN"
+      },
+      {
+        "id": "2026-08-25T14:53:00-CME-001",
+        "type": "CME",
+        "start_time_utc": "2026-08-25T14:53Z",
+        "source_region": "possible filament channel brightening (N12W00) between AR 14513 and AR 14517",
+        "note": "Not seen in GOES CCOR-1 (likely nose-on); real-time data gap in SOHO LASCO C2/C3. Partially overlaps outflow following the 10:38Z and 12:53Z CMEs.",
+        "evidence_grade": "PROVEN"
+      }
+    ],
+    "WSA_ENLIL": [
+      {
+        "id": "WSA-ENLIL/48261/1",
+        "type": "WSA_ENLIL",
+        "analysis_type": "COMBINED_TWO_CME_INPUT",
+        "model_completion_time_utc": "2026-08-25T17:01Z",
+        "cme_input_count": 2,
+        "cme_inputs": [
+          {"cmeid": "2026-08-25T12:53:00-CME-001", "featureCode": "LE", "speed_km_s": 770.0, "halfAngle_deg": 28.0, "latitude": -10.0, "longitude": -31.0, "time21_5": "2026-08-25T17:22Z"},
+          {"cmeid": "2026-08-25T10:38:00-CME-001", "featureCode": "LE", "speed_km_s": 510.0, "halfAngle_deg": 35.0, "latitude": 6.0, "longitude": -24.0, "time21_5": "2026-08-25T17:39Z"}
+        ],
+        "estimated_shock_arrival_utc": "2026-08-28T09:25Z",
+        "uncertainty_band": "+/- 7.0 h",
+        "kp_90": 4, "kp_135": 5, "kp_180": 6,
+        "is_earth_glancing_blow": false,
+        "link": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/WSA-ENLIL/48261/1",
+        "evidence_grade": "PROVEN",
+        "significance": "This is the only run in the cluster that took TWO CMEs as explicit model inputs. That fact lives at the model-run level and is invisible in any event-level representation."
+      },
+      {
+        "id": "WSA-ENLIL/48248/1",
+        "type": "WSA_ENLIL",
+        "analysis_type": "SINGLE_CME_LEADING_EDGE",
+        "model_completion_time_utc": "2026-08-25T13:15Z",
+        "cme_input_count": 1,
+        "cme_inputs": [
+          {"cmeid": "2026-08-25T10:38:00-CME-001", "featureCode": "LE", "speed_km_s": 510.0, "halfAngle_deg": 35.0, "latitude": 6.0, "longitude": -24.0, "time21_5": "2026-08-25T17:39Z"}
+        ],
+        "estimated_shock_arrival_utc": "2026-08-28T10:41Z",
+        "uncertainty_band": "+/- 7.0 h",
+        "kp_90": 4, "kp_135": 5, "kp_180": 5,
+        "is_earth_glancing_blow": false,
+        "link": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/CME/48246/1",
+        "evidence_grade": "PROVEN",
+        "alternative_analysis_of": "2026-08-25T10:38:00-CME-001",
+        "sibling_analysis": "WSA-ENLIL/48251/1"
+      },
+      {
+        "id": "WSA-ENLIL/48251/1",
+        "type": "WSA_ENLIL",
+        "analysis_type": "SPECULATIVE_SHOCK_FRONT",
+        "model_completion_time_utc": "2026-08-25T13:40Z",
+        "cme_input_count": 1,
+        "cme_inputs": [
+          {"cmeid": "2026-08-25T10:38:00-CME-001", "featureCode": "SH", "speed_km_s": 659.0, "halfAngle_deg": 39.0, "latitude": 12.0, "longitude": -15.0, "time21_5": "2026-08-25T15:55Z"}
+        ],
+        "estimated_shock_arrival_utc": "2026-08-28T00:32Z",
+        "uncertainty_band": "NOT_PUBLISHED",
+        "kp_90": 5, "kp_135": 6, "kp_180": 7,
+        "is_earth_glancing_blow": false,
+        "link": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/CMEAnalysis/48249/2",
+        "evidence_grade": "PROVEN",
+        "alternative_analysis_of": "2026-08-25T10:38:00-CME-001",
+        "sibling_analysis": "WSA-ENLIL/48248/1",
+        "critical_note": "featureCode 'SH' = shock front. NASA labels this a Speculative SHOCK analysis. This is NOT a separate CME. It is a second, alternative analysis of the SAME 10:38Z CME as run 48248. Counting 00:32Z and 10:41Z as two independent forecasts would double-count one event and fabricate a 10-hour spread of 'disagreement' that does not exist between producers."
+      },
+      {
+        "id": "WSA-ENLIL/48258/1",
+        "type": "WSA_ENLIL",
+        "analysis_type": "SINGLE_CME_GLANCING",
+        "model_completion_time_utc": "2026-08-25T16:12Z",
+        "cme_input_count": 1,
+        "cme_inputs": [
+          {"cmeid": "2026-08-25T12:53:00-CME-001", "featureCode": "LE", "speed_km_s": 770.0, "halfAngle_deg": 28.0, "latitude": -10.0, "longitude": -31.0, "time21_5": "2026-08-25T17:22Z"}
+        ],
+        "estimated_shock_arrival_utc": "2026-08-28T06:00Z",
+        "uncertainty_band": "+/- 7.0 h",
+        "kp_90": 3, "kp_135": 4, "kp_180": 5,
+        "is_earth_glancing_blow": true,
+        "link": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/CMEAnalysis/48257/1",
+        "evidence_grade": "PROVEN"
+      }
+    ],
+    "IPS": [
+      {
+        "id": "2026-08-28T08:30:00-IPS-001",
+        "type": "IPS",
+        "catalog": "M2M_CATALOG",
+        "location": "Earth",
+        "event_time_utc": "2026-08-28T08:30Z",
+        "submission_time_utc": "2026-08-28T17:26Z",
+        "version_id": 1,
+        "quality_of_icme_signature": "1 (lacks some signatures)",
+        "detecting_instruments": [
+          "SOLAR-1: MAG", "ACE: SWEPAM", "ACE: MAG",
+          "SOLAR-1: SWiPS", "IMAP: MAG", "IMAP: SWAPI"
+        ],
+        "detecting_platform_count": 3,
+        "observation_note": "An enhancement in magnetic field components with B_total increasing from 2nT to 13nT (peaking at 2026-08-28T16:11Z). Solar wind speed increased from approximately 250 km/s to 290 km/s from 2026-08-28T03:00Z to 13:35Z. An additional increase in solar wind speed up to 380 km/s and an increase in temperature is observed at 2026-08-28T13:35Z.",
+        "attribution_note_verbatim": "This arrival signature is ongoing and may be the arrival of CME: 2026-08-25T10:38Z, CME: 2026-08-25T12:53Z, and/or CME: 2026-08-25T14:53Z. A coronal hole high speed stream arrival may also be combined with this arrival signature.",
+        "submitted_by": "Mary Aronne",
+        "link": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/IPS/48360/1",
+        "evidence_grade": "PROVEN"
+      }
+    ],
+    "HSS": [
+      {
+        "id": "2026-08-28T14:28:00-HSS-001",
+        "type": "HSS",
+        "event_time_utc": "2026-08-28T14:28Z",
+        "submission_time_utc": "2026-08-29T15:31Z",
+        "instruments": [
+          "SOLAR-1: MAG", "ACE: SWEPAM", "ACE: MAG",
+          "SOLAR-1: SWiPS", "IMAP: MAG", "IMAP: SWAPI"
+        ],
+        "link": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/HSS/48384/-1",
+        "evidence_grade": "PROVEN",
+        "note": "Coronal hole high speed stream. Logged event time 14:28Z is AFTER the 08:30Z shock, yet the IPS note states an HSS arrival 'may also be combined with this arrival signature'."
+      }
+    ]
+  },
+
+  "edge_types": {
+    "SOURCE_FLARE": "A CME's originating flare. Structural, high confidence.",
+    "MODEL_INPUT": "A CME was an EXPLICIT numerical input to a named model run. This is a machine-readable fact from WSA-ENLIL cmeInputs, not an inference.",
+    "DIRECT_LINK": "A linkage asserted in a DONKI record's own structured linked-events list. Recorded linkage, NOT a causal claim.",
+    "POSSIBLE_CAUSE": "A candidate upstream driver that the source explicitly hedges ('may be', 'and/or'). Recorded ambiguity, deliberately NOT resolved.",
+    "COINCIDENT_DRIVER": "A separate driver that the source says may be combined with the observed signature. Not a cause, not unrelated.",
+    "OBSERVED_OUTCOME": "The later real observation a forecast is scored against."
+  },
+
+  "edges": [
+    {"from": "2026-08-25T10:38:00-CME-001", "to": "FLR-20260825-1002", "edge_type": "SOURCE_FLARE", "confidence": "ASSERTED_BY_SOURCE", "evidence": "ccmc_scoreboard_detail_5728"},
+
+    {"from": "WSA-ENLIL/48261/1", "to": "2026-08-25T12:53:00-CME-001", "edge_type": "MODEL_INPUT", "input_index": 0, "featureCode": "LE", "evidence": "donki_ws_wsaenlil_cmeInputs"},
+    {"from": "WSA-ENLIL/48261/1", "to": "2026-08-25T10:38:00-CME-001", "edge_type": "MODEL_INPUT", "input_index": 1, "featureCode": "LE", "evidence": "donki_ws_wsaenlil_cmeInputs"},
+    {"from": "WSA-ENLIL/48248/1", "to": "2026-08-25T10:38:00-CME-001", "edge_type": "MODEL_INPUT", "input_index": 0, "featureCode": "LE", "evidence": "donki_ws_wsaenlil_cmeInputs"},
+    {"from": "WSA-ENLIL/48251/1", "to": "2026-08-25T10:38:00-CME-001", "edge_type": "MODEL_INPUT", "input_index": 0, "featureCode": "SH", "evidence": "donki_ws_wsaenlil_cmeInputs"},
+    {"from": "WSA-ENLIL/48258/1", "to": "2026-08-25T12:53:00-CME-001", "edge_type": "MODEL_INPUT", "input_index": 0, "featureCode": "LE", "evidence": "donki_ws_wsaenlil_cmeInputs"},
+
+    {"from": "2026-08-25T10:38:00-CME-001", "to": "2026-08-28T08:30:00-IPS-001", "edge_type": "OBSERVED_OUTCOME", "evidence": "donki_ws_wsaenlil_ipsList"},
+    {"from": "2026-08-25T12:53:00-CME-001", "to": "2026-08-28T08:30:00-IPS-001", "edge_type": "OBSERVED_OUTCOME", "evidence": "donki_ws_wsaenlil_ipsList"},
+    {"from": "2026-08-25T14:53:00-CME-001", "to": "2026-08-28T08:30:00-IPS-001", "edge_type": "OBSERVED_OUTCOME", "evidence": "donki_ws_wsaenlil_ipsList"},
+
+    {"from": "2026-08-28T08:30:00-IPS-001", "to": "2026-08-25T10:38:00-CME-001", "edge_type": "POSSIBLE_CAUSE", "hedge_verbatim": "may be the arrival of", "evidence": "donki_view_ips_48360_note"},
+    {"from": "2026-08-28T08:30:00-IPS-001", "to": "2026-08-25T12:53:00-CME-001", "edge_type": "POSSIBLE_CAUSE", "hedge_verbatim": "and/or", "evidence": "donki_view_ips_48360_note"},
+    {"from": "2026-08-28T08:30:00-IPS-001", "to": "2026-08-25T14:53:00-CME-001", "edge_type": "POSSIBLE_CAUSE", "hedge_verbatim": "and/or", "evidence": "donki_view_ips_48360_note"},
+
+    {"from": "2026-08-28T08:30:00-IPS-001", "to": "2026-08-25T10:38:00-CME-001", "edge_type": "DIRECT_LINK", "present_in_representation": ["archive_export"], "evidence": "donki_ws_ips_linkedEvents"},
+    {"from": "2026-08-28T08:30:00-IPS-001", "to": "2026-08-25T12:53:00-CME-001", "edge_type": "DIRECT_LINK", "present_in_representation": ["archive_export"], "evidence": "donki_ws_ips_linkedEvents"},
+    {"from": "2026-08-28T08:30:00-IPS-001", "to": "2026-08-25T14:53:00-CME-001", "edge_type": "DIRECT_LINK", "present_in_representation": ["archive_export"], "evidence": "donki_ws_ips_linkedEvents"},
+
+    {
+      "from": "2026-08-28T08:30:00-IPS-001",
+      "to": "2026-08-28T14:28:00-HSS-001",
+      "edge_type": "COINCIDENT_DRIVER",
+      "hedge_verbatim": "A coronal hole high speed stream arrival may also be combined with this arrival signature.",
+      "representation_discrepancy_ref": "HSS_LINK_REPRESENTATION_DISCREPANCY",
+      "evidence": "donki_ws_ips_linkedEvents + donki_view_ips_48360_note"
+    },
+    {
+      "from": "2026-08-28T14:28:00-HSS-001",
+      "to": "2026-08-28T08:30:00-IPS-001",
+      "edge_type": "COINCIDENT_DRIVER",
+      "note": "Reciprocal. The HSS record's own linkedEvents list contains this IPS, so the association is bidirectional in the archive export.",
+      "evidence": "donki_ws_hss_linkedEvents"
+    }
+  ],
+
+  "representation_discrepancies": [
+    {
+      "id": "HSS_LINK_REPRESENTATION_DISCREPANCY",
+      "subject": "Whether HSS 2026-08-28T14:28:00-HSS-001 belongs to the direct-link set of IPS 2026-08-28T08:30:00-IPS-001",
+      "representation_a": {
+        "name": "DONKI archive export (WS API)",
+        "endpoint": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/WS/get/IPS?startDate=2026-08-27&endDate=2026-08-29",
+        "hss_present_in_linked_events": true,
+        "linked_events_returned": [
+          "2026-08-25T10:38:00-CME-001",
+          "2026-08-25T12:53:00-CME-001",
+          "2026-08-25T14:53:00-CME-001",
+          "2026-08-28T14:28:00-HSS-001"
+        ],
+        "evidence_grade": "PROVEN",
+        "retrieved_at_utc": "2026-08-31T05:04Z"
+      },
+      "representation_b": {
+        "name": "DONKI HTML detail view",
+        "endpoint": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/IPS/48360/1",
+        "hss_present_in_direct_link_list": false,
+        "owner_reported_direct_link_list": [
+          "2026-08-25T10:38:00-CME-001",
+          "2026-08-25T12:53:00-CME-001",
+          "2026-08-25T14:53:00-CME-001"
+        ],
+        "evidence_grade": "OWNER_SUPPLIED",
+        "verification_limit": "The detail page's 'All directly linked activities:' section rendered EMPTY in our text retrieval (the list is populated client-side and was not captured). We therefore could not independently confirm the three-CME list, nor independently confirm the HSS absence. The owner's report is recorded as OWNER_SUPPLIED, not PROVEN. What IS proven from this page is the hedged attribution note quoted verbatim above.",
+        "retrieved_at_utc": "2026-08-31T05:05Z"
+      },
+      "resolution": "NOT_RECONCILED_BY_DESIGN",
+      "why_preserved": "The two representations of the same NASA record disagree about whether the high speed stream belongs in the linked set. Silently picking one would manufacture a certainty the sources do not jointly support. The disagreement is itself evidence about source semantics: 'directly linked' means something different in the detail view than in the archive export. Preserving that is the product.",
+      "not_a_criticism": "This is not a defect in NASA's data. The hedged 'may be / and/or / may also be combined' language is correct scientific practice for an ongoing, multi-driver arrival signature with an ICME signature quality of 1. The fixture preserves the hedge rather than resolving it."
+    }
+  ],
+
+  "normalized_forecast_table": {
+    "observed_reference": "2026-08-28T08:30Z (IPS-001, Earth)",
+    "sign_convention": "signed_error_minutes = predicted_arrival - observed_arrival. POSITIVE = forecast was LATE (predicted after the observation). NEGATIVE = forecast was EARLY.",
+    "ordering": "Ranked by predicted arrival time ascending. This is a COMPARISON, not a sequence; row order carries no procedural meaning.",
+    "rows": [
+      {
+        "rank": 1,
+        "producer": "NASA M2M",
+        "model_identity": "WSA-ENLIL + Cone",
+        "run_id": "WSA-ENLIL/48251/1",
+        "analysis_type": "SPECULATIVE_SHOCK_FRONT",
+        "cme_inputs": ["2026-08-25T10:38:00-CME-001"],
+        "cme_input_count": 1,
+        "feature_code": "SH",
+        "predicted_arrival_utc": "2026-08-28T00:32Z",
+        "uncertainty_band": "NOT_PUBLISHED",
+        "predicted_kp": "Kp90=5, Kp135=6, Kp180=7",
+        "arrival_confidence_pct": null,
+        "prediction_submitted_utc": "2026-08-25T13:40Z",
+        "signed_error_minutes": -478,
+        "signed_error_human": "-7h 58m EARLY",
+        "source_authority": "NASA CCMC DONKI (experimental research information)",
+        "evidence_grade": "PROVEN",
+        "row_caveat": "Speculative shock-front analysis of the SAME CME as row 4. Not an independent forecast."
+      },
+      {
+        "rank": 2,
+        "producer": "NASA M2M",
+        "model_identity": "WSA-ENLIL + Cone",
+        "run_id": "WSA-ENLIL/48258/1",
+        "analysis_type": "SINGLE_CME_GLANCING",
+        "cme_inputs": ["2026-08-25T12:53:00-CME-001"],
+        "cme_input_count": 1,
+        "feature_code": "LE",
+        "predicted_arrival_utc": "2026-08-28T06:00Z",
+        "uncertainty_band": "+/- 7.0 h",
+        "predicted_kp": "Kp90=3, Kp135=4, Kp180=5",
+        "arrival_confidence_pct": null,
+        "prediction_submitted_utc": "2026-08-25T16:12Z",
+        "signed_error_minutes": -150,
+        "signed_error_human": "-2h 30m EARLY",
+        "source_authority": "NASA CCMC DONKI (experimental research information)",
+        "evidence_grade": "PROVEN",
+        "row_caveat": "Forecast an Earth GLANCING BLOW (isEarthGB = true)."
+      },
+      {
+        "rank": 3,
+        "producer": "KSWC / RWC KSWC (KASA)",
+        "model_identity": "WSA-ENLIL + Cone",
+        "run_id": null,
+        "analysis_type": "SINGLE_CME_LEADING_EDGE",
+        "cme_inputs": ["2026-08-25T10:38:00-CME-001"],
+        "cme_input_count": 1,
+        "feature_code": null,
+        "predicted_arrival_utc": "2026-08-28T09:00Z",
+        "uncertainty_band": "NOT_PUBLISHED",
+        "predicted_kp": "NOT_PUBLISHED",
+        "arrival_confidence_pct": null,
+        "prediction_submitted_utc": "2026-08-26T00:36Z",
+        "signed_error_minutes": 30,
+        "signed_error_human": "+0h 30m LATE",
+        "source_authority": "Korean Space Weather Center, via NASA CCMC CME Scoreboard",
+        "evidence_grade": "PROVEN",
+        "row_caveat": "Model inputs not exposed at run level by the scoreboard; analysis type inferred from method label, not from cmeInputs."
+      },
+      {
+        "rank": 4,
+        "producer": "NASA M2M",
+        "model_identity": "WSA-ENLIL + Cone",
+        "run_id": "WSA-ENLIL/48261/1",
+        "analysis_type": "COMBINED_TWO_CME_INPUT",
+        "cme_inputs": ["2026-08-25T12:53:00-CME-001", "2026-08-25T10:38:00-CME-001"],
+        "cme_input_count": 2,
+        "feature_code": "LE + LE",
+        "predicted_arrival_utc": "2026-08-28T09:25Z",
+        "uncertainty_band": "+/- 7.0 h",
+        "predicted_kp": "Kp90=4, Kp135=5, Kp180=6",
+        "arrival_confidence_pct": null,
+        "prediction_submitted_utc": "2026-08-25T17:21Z",
+        "signed_error_minutes": 55,
+        "signed_error_human": "+0h 55m LATE",
+        "source_authority": "NASA CCMC DONKI (experimental research information)",
+        "evidence_grade": "PROVEN",
+        "row_caveat": "CLOSEST NOMINAL AGREEMENT, AND THE ONLY TWO-CME RUN. The 55-minute nominal difference sits inside a +/-7 h (14-hour-wide) published band. This is NOT a precision result and must not be presented as one."
+      },
+      {
+        "rank": 5,
+        "producer": "NASA M2M",
+        "model_identity": "Ensemble WSA-ENLIL + Cone",
+        "run_id": null,
+        "analysis_type": "ENSEMBLE",
+        "cme_inputs": ["2026-08-25T10:38:00-CME-001"],
+        "cme_input_count": 1,
+        "feature_code": null,
+        "predicted_arrival_utc": "2026-08-28T09:44Z",
+        "uncertainty_band": "-5.4 h / +7.4 h",
+        "predicted_kp": "Max Kp Range 3.0 - 5.0",
+        "arrival_confidence_pct": 100.0,
+        "prediction_submitted_utc": "2026-08-25T21:06Z",
+        "signed_error_minutes": 74,
+        "signed_error_human": "+1h 14m LATE",
+        "source_authority": "NASA CCMC CME Scoreboard (experimental research information)",
+        "evidence_grade": "PROVEN",
+        "row_caveat": "Stated 100% arrival confidence. Confidence of ARRIVAL, not confidence of TIMING; the timing band is still ~13 hours wide."
+      },
+      {
+        "rank": 6,
+        "producer": "CCMC (auto-generated)",
+        "model_identity": "Average of all Methods",
+        "run_id": null,
+        "analysis_type": "DERIVED_AGGREGATE",
+        "cme_inputs": ["2026-08-25T10:38:00-CME-001"],
+        "cme_input_count": null,
+        "feature_code": null,
+        "predicted_arrival_utc": "2026-08-28T09:45Z",
+        "uncertainty_band": "NOT_APPLICABLE",
+        "predicted_kp": "Max Kp Range 3.83333 - 5.33333",
+        "arrival_confidence_pct": 80.0,
+        "prediction_submitted_utc": null,
+        "signed_error_minutes": 75,
+        "signed_error_human": "+1h 15m LATE",
+        "source_authority": "NASA CCMC CME Scoreboard (experimental research information)",
+        "evidence_grade": "PROVEN",
+        "row_caveat": "NOT AN INDEPENDENT FORECAST. Auto-generated mean of the other submitted rows. Scoring an aggregate against a multi-source observation is not a causal prediction experiment. This is the row behind the REFUSED 'within three minutes' claim; the owner-supplied 08:33Z figure is contradicted by this retrieved 09:45Z value."
+      },
+      {
+        "rank": 7,
+        "producer": "NASA M2M",
+        "model_identity": "WSA-ENLIL + Cone",
+        "run_id": "WSA-ENLIL/48248/1",
+        "analysis_type": "SINGLE_CME_LEADING_EDGE",
+        "cme_inputs": ["2026-08-25T10:38:00-CME-001"],
+        "cme_input_count": 1,
+        "feature_code": "LE",
+        "predicted_arrival_utc": "2026-08-28T10:41Z",
+        "uncertainty_band": "+/- 7.0 h",
+        "predicted_kp": "Kp90=4, Kp135=5, Kp180=5",
+        "arrival_confidence_pct": null,
+        "prediction_submitted_utc": "2026-08-25T13:15Z",
+        "signed_error_minutes": 131,
+        "signed_error_human": "+2h 11m LATE",
+        "source_authority": "NASA CCMC DONKI (experimental research information)",
+        "evidence_grade": "PROVEN",
+        "row_caveat": "Leading-edge analysis of the SAME CME as row 1. Not an independent forecast."
+      },
+      {
+        "rank": 8,
+        "producer": "Met Office",
+        "model_identity": "WSA-ENLIL + Cone",
+        "run_id": null,
+        "analysis_type": "SINGLE_CME_LEADING_EDGE",
+        "cme_inputs": ["2026-08-25T10:38:00-CME-001"],
+        "cme_input_count": 1,
+        "feature_code": null,
+        "predicted_arrival_utc": "2026-08-28T12:00Z",
+        "uncertainty_band": "+/- 3.0 h",
+        "predicted_kp": "Max Kp Range 4.0 - 5.0",
+        "arrival_confidence_pct": null,
+        "prediction_submitted_utc": "2026-08-25T21:25Z",
+        "signed_error_minutes": 210,
+        "signed_error_human": "+3h 30m LATE",
+        "source_authority": "UK Met Office, via NASA CCMC CME Scoreboard",
+        "evidence_grade": "PROVEN",
+        "row_caveat": "HUMAN-IN-THE-LOOP. Narrowest published band in the set (+/-3 h) and the only row with an explicit human adjustment. The narrow band excludes the observed 08:30Z."
+      },
+      {
+        "rank": 9,
+        "producer": "SIDC",
+        "model_identity": "SIDC",
+        "run_id": null,
+        "analysis_type": "SINGLE_CME_LEADING_EDGE",
+        "cme_inputs": ["2026-08-25T10:38:00-CME-001"],
+        "cme_input_count": 1,
+        "feature_code": null,
+        "predicted_arrival_utc": "2026-08-28T15:00Z",
+        "uncertainty_band": "+/- 12.0 h",
+        "predicted_kp": "Max Kp Range 4.0 - 5.0",
+        "arrival_confidence_pct": 60.0,
+        "prediction_submitted_utc": "2026-08-26T07:28Z",
+        "signed_error_minutes": 390,
+        "signed_error_human": "+6h 30m LATE",
+        "source_authority": "SIDC / Royal Observatory of Belgium, via NASA CCMC CME Scoreboard",
+        "evidence_grade": "PROVEN",
+        "row_caveat": "Widest published band (+/-12 h)."
+      }
+    ],
+    "independent_producer_count": 5,
+    "independent_producers": ["NASA M2M", "KSWC", "Met Office", "SIDC", "CCMC (derived aggregate, not independent)"],
+    "distinct_forecast_row_count": 9,
+    "arrival_window_across_producers_utc": "2026-08-28T00:32Z to 2026-08-28T15:00Z",
+    "arrival_window_excluding_speculative_and_derived_utc": "2026-08-28T06:00Z to 2026-08-28T15:00Z",
+    "spread_hours": 14.47,
+    "double_counting_warning": "Rows 1 and 7 are two ALTERNATIVE ANALYSES of a single CME (2026-08-25T10:38Z), differing only by featureCode (SH vs LE). They are not two independent producers disagreeing. Any spread statistic computed over all nine rows inherits this double count."
+  },
+
+  "evidence_assessment": {
+    "headline_verdicts": [
+      "FORECAST ARRIVAL CONFIRMED",
+      "CAUSAL ATTRIBUTION NOT UNIQUE"
+    ],
+    "axes": [
+      {
+        "axis": "Arrival observed",
+        "verdict": "PASS",
+        "basis": "IPS 2026-08-28T08:30:00-IPS-001 recorded at Earth, detected by 6 instruments across 3 platforms (SOLAR-1, ACE, IMAP). Machine-readable, retrieved from the DONKI archive export."
+      },
+      {
+        "axis": "Exact responsible CME",
+        "verdict": "UNKNOWN",
+        "basis": "NASA's own IPS note hedges across three CMEs with 'may be ... and/or', plus a possibly combined coronal hole high speed stream. Two DONKI representations additionally disagree on whether the HSS belongs in the direct-link set. Unresolved in the source; deliberately unresolved here."
+      },
+      {
+        "axis": "Prediction provenance known",
+        "verdict": "PASS",
+        "basis": "Every row carries producer, model identity, analysis type, explicit CME model inputs where exposed, uncertainty band, submission timestamp, and source authority. Four rows carry a machine-readable WSA-ENLIL run ID with its cmeInputs array."
+      },
+      {
+        "axis": "Official operational forecast",
+        "verdict": "NO",
+        "basis": "CCMC labels this 'Experimental Research Information' and directs operational users to NOAA SWPC. Aevion retains that boundary rather than flattening it."
+      },
+      {
+        "axis": "Human review required",
+        "verdict": "POLICY-DEPENDENT",
+        "basis": "Determined by the consuming mission's policy, not by this system. Aevion assembles evidence and applies a policy check; a human holds mission authority."
+      }
+    ]
+  },
+
+  "implemented_policy_state": {
+    "vocabulary_source": "space-weather-dashboard/dashboard/components/evidence.py :: POLICY_STATES",
+    "available_states": ["PASS", "FAIL", "UNKNOWN", "HOLD"],
+    "state_for_this_replay": "UNKNOWN",
+    "why": "The implemented policy_check() returns UNKNOWN when no model score exists. Aevion produced no forecast for this event, so there is no score. The fixture reports the state the code actually emits rather than inventing decision vocabulary the codebase does not produce.",
+    "human_authority_notice": "This system does not launch, abort, or authorize anything. It assembles evidence and applies a policy check; a human holds mission authority and makes the decision."
+  },
+
+  "sources": [
+    {"url": "https://webtools.ccmc.gsfc.nasa.gov/CMEscoreboard/", "retrieved_at_utc": "2026-08-31T04:58Z", "used_for": "Multi-producer forecast rows, uncertainty bands, submission times, confidence percentages."},
+    {"url": "https://webtools.ccmc.gsfc.nasa.gov/CMEscoreboard/prediction/detail/5728", "retrieved_at_utc": "2026-08-31T04:57Z", "used_for": "CME 10:38Z record, source flare M6.9 / AR 14513, aggregate 09:45Z (contradicts owner-supplied 08:33Z), observed shock 08:30Z."},
+    {"url": "https://webtools.ccmc.gsfc.nasa.gov/CMEscoreboard/prediction/detail/5731", "retrieved_at_utc": "2026-08-31T04:58Z", "used_for": "CME 12:53Z record, NASA M2M 06:00Z glancing-blow prediction, overlap statement with the 10:38Z CME."},
+    {"url": "https://webtools.ccmc.gsfc.nasa.gov/DONKI/", "retrieved_at_utc": "2026-08-31T04:57Z", "used_for": "DONKI entry point and provenance/classification language."},
+    {"url": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/WS/get/WSAEnlilSimulations?startDate=2026-08-25&endDate=2026-08-26", "retrieved_at_utc": "2026-08-31T05:04Z", "used_for": "PRIMARY. Run-level cmeInputs arrays, featureCode LE/SH, arrival times, Kp, isEarthGB, ipsList. This is the only source that proves run 48261 took two CMEs."},
+    {"url": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/WS/get/IPS?startDate=2026-08-27&endDate=2026-08-29", "retrieved_at_utc": "2026-08-31T05:04Z", "used_for": "Observed-event receipt: instruments, linkedEvents including the HSS (representation A)."},
+    {"url": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/WS/get/HSS?startDate=2026-08-27&endDate=2026-08-29", "retrieved_at_utc": "2026-08-31T05:05Z", "used_for": "HSS record and its reciprocal link back to the IPS."},
+    {"url": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/IPS/48360/1", "retrieved_at_utc": "2026-08-31T05:05Z", "used_for": "Verbatim hedged attribution note; ICME signature quality; representation B of the direct-link set."},
+    {"url": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/WSA-ENLIL/48261/1", "retrieved_at_utc": "2026-08-31T05:04Z", "used_for": "Combined two-CME run reference (content verified via the WS API record for simulationID WSA-ENLIL/48261/1)."},
+    {"url": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/CME/48246/1", "retrieved_at_utc": "2026-08-31T05:04Z", "used_for": "Single-CME leading-edge analysis reference for the 10:38Z CME."},
+    {"url": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/CMEAnalysis/48249/2", "retrieved_at_utc": "2026-08-31T05:04Z", "used_for": "Speculative shock-front analysis reference (featureCode SH verified via the WS API record for WSA-ENLIL/48251/1)."},
+    {"url": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/view/CMEAnalysis/48257/1", "retrieved_at_utc": "2026-08-31T05:04Z", "used_for": "Single-CME glancing-blow analysis reference for the 12:53Z CME."}
+  ]
+}

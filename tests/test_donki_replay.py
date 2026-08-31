@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -34,6 +35,35 @@ def fx() -> dict:
 
 
 # ─── Render safety ────────────────────────────────────────────────────────────
+
+def test_fixture_path_stays_inside_the_repo():
+    """The fixture must resolve inside the clone, not above it.
+
+    A previous anchor of parents[3] pointed at the directory *containing* the
+    repo, which happens to hold 04_EVIDENCE on the author's machine. The suite
+    passed locally and failed in CI and for anyone cloning the repo. Anchoring
+    above the repo root is the defect, so assert against it directly.
+    """
+    repo_root = Path(donki_replay.__file__).resolve().parents[2]
+    assert donki_replay.FIXTURE_PATH.is_relative_to(repo_root)
+    assert donki_replay.FIXTURE_PATH.exists()
+    assert donki_replay.FIXTURE_PATH.relative_to(repo_root) == Path(
+        "04_EVIDENCE/lanes/ibm-donki-replay-001/DONKI_REPLAY_FIXTURE.json"
+    )
+
+
+def test_fixture_is_tracked_by_git():
+    """Present on disk is not enough — it has to be in the committed tree."""
+    repo_root = Path(donki_replay.__file__).resolve().parents[2]
+    tracked = subprocess.run(
+        ["git", "ls-files", "--error-unmatch",
+         "04_EVIDENCE/lanes/ibm-donki-replay-001/DONKI_REPLAY_FIXTURE.json"],
+        cwd=repo_root, capture_output=True, text=True,
+    )
+    if tracked.returncode != 0 and "not a git repository" in tracked.stderr.lower():
+        pytest.skip("not a git checkout")
+    assert tracked.returncode == 0, "fixture is untracked; a fresh clone would miss it"
+
 
 def test_card_never_uses_unsafe_allow_html():
     assert "unsafe_allow_html" not in CARD_BODY
@@ -85,6 +115,14 @@ def test_card_renders_without_error_and_writes_no_markup(monkeypatch):
 def test_provenance_boundary_is_rendered_verbatim():
     for required in ("NASA CCMC DONKI", "Experimental research information", "NOAA SWPC"):
         assert required in json.dumps(donki_replay.load_fixture())
+
+
+def test_fixture_path_is_repo_relative_and_present():
+    repo_root = Path(donki_replay.__file__).resolve().parents[2]
+    fixture = donki_replay.FIXTURE_PATH.resolve()
+    assert fixture.is_relative_to(repo_root)
+    assert fixture == repo_root / "04_EVIDENCE" / "lanes" / "ibm-donki-replay-001" / "DONKI_REPLAY_FIXTURE.json"
+    assert fixture.is_file()
 
 
 # ─── Verdict presentation ─────────────────────────────────────────────────────
