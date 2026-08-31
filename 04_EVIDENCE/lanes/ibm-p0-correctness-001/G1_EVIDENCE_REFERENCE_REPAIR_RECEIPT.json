@@ -1,23 +1,58 @@
 {
   "receipt_id": "IBM-G1.5-EVIDENCE-REFERENCES-2026-08-31",
-  "status": "IMPLEMENTED_LOCAL_ONLY",
+  "status": "VERIFIED_PUBLIC",
   "truth_class": "EMPIRICAL",
-  "what_changed": "Added the browser verification records and five referenced screenshots to the repository so submission-facing evidence paths resolve in a fresh clone.",
-  "paths_verified": [
-    "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/BROWSER_VERIFICATION.json",
-    "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/home.png",
-    "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/data_pipeline.png",
-    "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/model_lab.png",
-    "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/prediction_explorer.png",
-    "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/about.png",
-    "04_EVIDENCE/lanes/ibm-p0-correctness-001/SECRET_SCAN.json"
-  ],
-  "checks": {
-    "json_parse": "PASS",
-    "referenced_files_exist": "PASS",
-    "metadata_absolute_paths": "PASS_NONE",
-    "secret_scan_record": "NO_FINDING"
+  "supersedes": "IMPLEMENTED_LOCAL_ONLY snapshot of the same receipt_id",
+  "what_changed": "Published the browser verification records, five referenced screenshots, the re-run secret scan, and the two processed tables cited by name in submission-facing documents, so every referenced evidence path resolves in a fresh clone and over public HTTP. Corrected three stale self-contradicting claims in SUBMISSION_CHECKLIST.md.",
+  "reference_audit": {
+    "documents_audited": [
+      "FINAL_REVIEW.md",
+      "IBM-SUBMISSION-CANDIDATE.json",
+      "SUBMISSION_CHECKLIST.md",
+      "README.md"
+    ],
+    "total_path_references": 63,
+    "unresolved_before": 14,
+    "unresolved_after": 0,
+    "absent_everywhere": 0,
+    "claims_downgraded": 0,
+    "note": "No claim required downgrading: every unresolved reference pointed at an artifact that existed locally but had never been published."
   },
-  "claim_ceiling": "Local repository self-containment is verified. Public availability, CI, and submission readiness remain unverified until push and external checks.",
-  "external_effects": "none"
+  "stale_claims_corrected": [
+    {
+      "location": "SUBMISSION_CHECKLIST.md row 3 and row 3 detail",
+      "asserted": "repository is PRIVATE and empty, nothing pushed",
+      "observed": "visibility PUBLIC, isEmpty false, 68 tracked files on main"
+    },
+    {
+      "location": "SUBMISSION_CHECKLIST.md row 11 and 'CI honesty' section",
+      "asserted": "workflow has never executed; repository does not exist (HTTP 404)",
+      "observed": "run 33429736306 success at ed51c86, 143 passed"
+    },
+    {
+      "location": "SUBMISSION_CHECKLIST.md owner-only steps 2, 4a, 5",
+      "asserted": "pending owner actions including the irreversible visibility flip",
+      "observed": "already executed; retained as struck-through history rather than deleted"
+    }
+  ],
+  "verification": {
+    "method": "independent read-after-write; the mutation response was not treated as the receipt",
+    "public_http_head_checks": "9/9 distinct paths returned HTTP 200 from raw.githubusercontent.com at ref main",
+    "previously_404": "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/home.png now HTTP 200",
+    "ci_run": "33431633565",
+    "ci_conclusion": "success",
+    "ci_commit": "805fbba",
+    "secret_scan_on_outgoing_diff": "NO_FINDING"
+  },
+  "parquet_tracking_decision": {
+    "files": [
+      "dashboard/data/processed/daily_master.parquet",
+      "dashboard/data/processed/features_v1.parquet"
+    ],
+    "combined_bytes": 83339,
+    "mechanism": "explicit .gitignore negations, not git add -f",
+    "rationale": "Both are cited by name in submission-facing documents. Negations keep the blanket *.parquet exclusion intact for every other file, so the decision is visible in the ignore file rather than hidden in a one-off command."
+  },
+  "claim_ceiling": "Every submission-facing evidence reference resolves publicly, and CI is green on the published tip. This is not a claim that the prototype is correct, that hosted runtime behaviour is verified, or that the submission is complete. Owner-only items in SUBMISSION_CHECKLIST.md remain open, including IBM SkillsBuild completion evidence, the video, and the challenge page.",
+  "external_effects": "Pushed commit 805fbba to the public repository S-Leishman/space-weather-dashboard."
 }
