@@ -320,6 +320,19 @@ pytest -q
   *AI Approach*.
 - The **raw** DONKI/SWPC pulls are not committed, so the Data Pipeline page reports them
   `MISSING` until notebook 01 is run.
+- **F10.7 features are derived from a monthly-cadence source.** `ingestion.py` fetches
+  NOAA's observed solar-cycle indices, which publish at monthly resolution, while the
+  feature builder derives `flux_3d_avg` and `flux_7d_avg` from that series. Those columns
+  therefore do not represent true 3-day or 7-day radio-flux variability and must not be
+  read as high-frequency operational measurements. A higher-cadence NOAA F10.7 product is
+  required before they carry their stated meaning.
+- **The Prediction Explorer collapses both flux windows onto a single input.** The page
+  assigns the one F10.7 slider value to `flux_3d_avg` and `flux_7d_avg` alike, so the two
+  features cannot be varied independently in the interactive path.
+- **Live dashboard fetches are NASA DONKI.** NOAA SWPC is ingested by the batch data
+  pipeline, not by the dashboard's live path. NOAA SWPC is the official U.S. operational
+  forecast authority; NASA DONKI publishes preliminary experimental research information.
+  Nothing here is an operational forecast.
 - The notebooks contain **zero executed code cells**. They document method; they are not
   reproduced analysis and are not presented as such.
 - The CI workflow ships with the repository but has limited execution history, the project
@@ -342,6 +355,19 @@ Exploratory work, outside the submitted system's architecture.
 A separate research lane has demonstrated live IBM quantum-hardware access and receipt
 capture. Quantum execution is not required for the submitted mission-risk system and no
 quantum advantage is claimed.
+
+---
+
+## Author
+
+Scott Leishman — Arizona State University student.
+
+**Project:** Aevion SpaceOps
+**Affiliation:** Aevion LLC
+
+The human-factors reasoning behind the evidence-sufficiency, uncertainty-preservation, and
+human-authority design choices is recorded in
+[docs/HUMAN_FACTORS_SECTION.md](docs/HUMAN_FACTORS_SECTION.md).
 
 ---
 
