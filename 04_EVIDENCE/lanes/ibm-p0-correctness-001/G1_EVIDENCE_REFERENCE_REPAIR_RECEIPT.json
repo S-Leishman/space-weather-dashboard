@@ -1,0 +1,23 @@
+{
+  "receipt_id": "IBM-G1.5-EVIDENCE-REFERENCES-2026-08-31",
+  "status": "IMPLEMENTED_LOCAL_ONLY",
+  "truth_class": "EMPIRICAL",
+  "what_changed": "Added the browser verification records and five referenced screenshots to the repository so submission-facing evidence paths resolve in a fresh clone.",
+  "paths_verified": [
+    "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/BROWSER_VERIFICATION.json",
+    "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/home.png",
+    "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/data_pipeline.png",
+    "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/model_lab.png",
+    "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/prediction_explorer.png",
+    "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/about.png",
+    "04_EVIDENCE/lanes/ibm-p0-correctness-001/SECRET_SCAN.json"
+  ],
+  "checks": {
+    "json_parse": "PASS",
+    "referenced_files_exist": "PASS",
+    "metadata_absolute_paths": "PASS_NONE",
+    "secret_scan_record": "NO_FINDING"
+  },
+  "claim_ceiling": "Local repository self-containment is verified. Public availability, CI, and submission readiness remain unverified until push and external checks.",
+  "external_effects": "none"
+}

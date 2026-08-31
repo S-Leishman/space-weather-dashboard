@@ -1,0 +1,20 @@
+{
+  "verification_scope": "local detached Streamlit instance",
+  "base_url": "http://127.0.0.1:8505",
+  "pages": {
+    "home": {"render": "OK", "screenshot": "home.png"},
+    "data_pipeline": {"render": "OK", "screenshot": "data_pipeline.png"},
+    "model_lab": {"render": "OK", "screenshot": "model_lab.png"},
+    "prediction_explorer": {"render": "OK", "screenshot": "prediction_explorer.png"},
+    "about": {"render": "OK", "screenshot": "about.png"}
+  },
+  "assertions": {
+    "model_identity_global": true,
+    "artifact_root_coherence": true,
+    "shap_claim_coherence": true,
+    "claim_ceilings": true,
+    "positioning": true,
+    "integrity": true
+  },
+  "claim_ceiling": "Local browser verification only; not proof of hosted runtime behavior."
+}

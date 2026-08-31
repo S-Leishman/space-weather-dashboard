@@ -1,0 +1,33 @@
+{
+  "receipt_id": "IBM-G1-FIXTURE-PATH-REPAIR-2026-08-31",
+  "status": "PARTIAL",
+  "commit": "c5c25058defe995c985726644cc9145bafd23e64",
+  "truth_class": "EMPIRICAL",
+  "what_changed": [
+    "Changed DONKI replay fixture anchor from repository-parent resolution to repository-root resolution.",
+    "Added a regression test for repository-relative fixture resolution and presence."
+  ],
+  "files": [
+    "dashboard/components/donki_replay.py",
+    "tests/test_donki_replay.py",
+    "04_EVIDENCE/lanes/ibm-donki-replay-001/DONKI_REPLAY_FIXTURE.json"
+  ],
+  "targeted_test": {
+    "command": "python -m pytest tests/test_donki_replay.py -q",
+    "passed": 24,
+    "failed": 0,
+    "exit_code": 0
+  },
+  "full_suite": {
+    "command": "python -m pytest tests/ --basetemp=.pytest_run_g1 --ignore=tests/test_frontend.py",
+    "status": "PASS",
+    "observed_tests": 113,
+    "exit_code": 0,
+    "note": "Fresh rerun reached 100% with exit code 0. The command explicitly excludes tests/test_frontend.py, so this is not the complete 140-test suite."
+  },
+  "external_effects": "none",
+  "commit_verified": true,
+  "push": null,
+  "ci": "UNVERIFIED",
+  "claim_ceiling": "Local targeted regression evidence only; release readiness requires complete suite, commit, push, and external CI verification."
+}
