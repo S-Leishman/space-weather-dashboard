@@ -65,3 +65,6 @@ desktop.ini
 # pytest scratch dirs (contain generated model binaries)
 .pytest_basetemp*/
 .aevion_check.py
+
+# pytest scratch dirs (generated .joblib artifacts must never be committed)
+.pytest_temp/
