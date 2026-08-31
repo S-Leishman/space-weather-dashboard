@@ -1,0 +1,116 @@
+{
+  "mission": "IBM-FINISH-TO-REVIEW-001",
+  "status": "SUBMISSION_CANDIDATE_READY",
+  "product": "Aevion SpaceOps — AI mission-risk decisions with evidence, provenance, and human authority",
+  "repo": {
+    "url": "https://github.com/S-Leishman/space-weather-dashboard",
+    "visibility": "PUBLIC",
+    "default_branch": "main",
+    "release_commit_sha": "33c0bbf70e365c986612e69cca300e7b96dc2028",
+    "readme_renders_publicly": true,
+    "readme_public_check": {
+      "http_status": 200,
+      "unauthenticated": true,
+      "title_present": true,
+      "known_limitations_present": true
+    }
+  },
+  "tests": {
+    "command": "python -m pytest -q",
+    "collected": 140,
+    "exit_code": 0,
+    "per_file": {
+      "tests/test_crosspage_coherence.py": 17,
+      "tests/test_crosspage_coherence_guards.py": 16,
+      "tests/test_dashboard_utils.py": 9,
+      "tests/test_donki_replay.py": 23,
+      "tests/test_evidence_positioning.py": 12,
+      "tests/test_features.py": 7,
+      "tests/test_frontend.py": 30,
+      "tests/test_ingestion.py": 6,
+      "tests/test_model.py": 7,
+      "tests/test_p0_regressions.py": 13
+    }
+  },
+  "browser_verification": {
+    "base_url": "http://127.0.0.1:8505",
+    "record": "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/BROWSER_VERIFICATION.json",
+    "pages": {
+      "home": {"render": "OK", "chars": 3986, "raw_js": false, "exception": false, "screenshot": "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/home.png"},
+      "data_pipeline": {"render": "OK", "chars": 1321, "raw_js": false, "exception": false, "screenshot": "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/data_pipeline.png"},
+      "model_lab": {"render": "OK", "chars": 2107, "raw_js": false, "exception": false, "screenshot": "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/model_lab.png"},
+      "prediction_explorer": {"render": "OK", "chars": 2058, "raw_js": false, "exception": false, "screenshot": "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/prediction_explorer.png"},
+      "about": {"render": "OK", "chars": 5121, "raw_js": false, "exception": false, "screenshot": "04_EVIDENCE/lanes/ibm-p0-correctness-001/BROWSER/about.png"}
+    },
+    "assertions": {
+      "A_model_identity_global": {"pass": true, "home": "logistic_regression", "prediction_explorer": "logistic_regression", "validation_champion": "logistic_regression"},
+      "B_artifact_root_coherence": {"pass": true, "home_features_sha256": "223c8518985b13e35ba47b522557f15de205e0d9e29e8888d1178a64c768059f", "pipeline_features_sha256": "223c8518985b13e35ba47b522557f15de205e0d9e29e8888d1178a64c768059f", "same_artifact_root": true, "missing_raw_ingest_count": 6, "absence_explained_in_page": true, "warning_suppressed": false},
+      "C_shap_claim_coherence": {"pass": true, "explorer_reports_unavailable": true, "about_shap_marked_future_only": true},
+      "D_claim_ceilings": {"pass": true, "banned_strings_present": [], "maturity_levels_present": true},
+      "E_relabelling": {"pass": true, "launch_probability_gone": true, "pgo_gone": true, "prototype_score_shown": true},
+      "POSITIONING": {"pass": true, "product_name": true, "decision_chain_visible": true, "policy_state_visible": true, "human_authority_statement": true},
+      "INTEGRITY": {"pass": true, "no_raw_js": true, "no_exceptions": true, "synthetic_disclaimer_visible": true, "model_lab_candour_intact": true, "fabricated_metrics": []}
+    }
+  },
+  "artifact_hashes_sha256": {
+    "dashboard/models/logistic_regression.joblib": "455274f4ee0313bcd65ddb3857e38384b35dd4c021a7d729dbb604be1956c8f3",
+    "dashboard/models/logistic_regression_metadata.json": "8a845f1bf7c3c711b51b5ad9c42f16239596708830ae3c40da494f19dea76289",
+    "dashboard/models/random_forest.joblib": "9f3611e9db63d158a34c1292d3cb2696bf582f7336d732ff1fee55816d116b85",
+    "dashboard/models/random_forest_metadata.json": "1215e6231a28b4d630f6f272f95f2c5c9b7f4d41e9f9b85721d282048d2cb72a",
+    "dashboard/models/xgboost.joblib": "19edd364420c595e2234911273180a7c19a568dc461053cf1d4f80d33625e65b",
+    "dashboard/models/xgboost_metadata.json": "a6c157b162372665d69d538cdb88433e9f7d65eb377faae311c45e85916cbb07",
+    "dashboard/models/metrics_summary.json": "a9b27c2a9d09e7958730d52d63069560a4c1cc9446797d4b26ea094a6b204a37",
+    "dashboard/data/processed/features_v1.parquet": "223c8518985b13e35ba47b522557f15de205e0d9e29e8888d1178a64c768059f",
+    "dashboard/data/processed/daily_master.parquet": "2b2bd93a4fa86dcee167af67dd4d68af2992e5602ee8eb487ab56f80035d0bac",
+    "dashboard/data/processed/FEATURE_PROVENANCE.json": "39f77688771750ae2331f34bb10e46951e4de22fb068cbb5475d6208701e1374"
+  },
+  "secret_scan": {
+    "verdict": "NO_FINDING",
+    "files_considered": 61,
+    "text_files_scanned": 48,
+    "blocking": 0,
+    "review": 0,
+    "report": "04_EVIDENCE/lanes/ibm-p0-correctness-001/SECRET_SCAN.json",
+    "redactions_applied": "5 absolute-path leaks in internal markdown redacted to <REPO_ROOT>/<HOME> before publication",
+    "student_credentials_published": false
+  },
+  "readme_sections": {
+    "Aevion SpaceOps": true,
+    "Problem Statement": true,
+    "Solution": true,
+    "Working Demo": true,
+    "AI Approach": true,
+    "System Architecture": true,
+    "Evidence and Provenance": true,
+    "Human Authority and Safety Boundary": true,
+    "Challenge Theme": true,
+    "How IBM Bob Was Used": true,
+    "Data Sources": true,
+    "Running Locally": true,
+    "Verification / Tests": true,
+    "Known Limitations": true,
+    "Research Experiments": true,
+    "racing_language_present": false
+  },
+  "video": {
+    "shot_list": "docs/VIDEO_SHOT_LIST.md",
+    "duration_max_seconds": 180,
+    "screen_recording_produced": false,
+    "screen_recording_is_owner_step": true,
+    "beat_screenshots": {
+      "0:00-0:20 problem": ["docs/demo/beat1_problem.png"],
+      "0:20-0:40 product": ["docs/demo/beat2_product.png"],
+      "0:40-1:35 live scenario": ["docs/demo/beat3a_inputs.png", "docs/demo/beat3b_verdict.png", "docs/demo/beat3c_receipt.png"],
+      "1:35-2:15 evidence view": ["docs/demo/beat4a_pipeline.png", "docs/demo/beat4b_provenance.png"],
+      "2:15-2:40 IBM Bob usage": ["docs/demo/beat5_bob.png"],
+      "2:40-3:00 impact": ["docs/demo/beat6_impact.png"]
+    }
+  },
+  "owner_actions": [
+    "Create and PUBLISH the project entry on the BeMyApp platform (a saved draft is NOT an entry).",
+    "Complete the IBM SkillsBuild IBM Bob learning activity (each team member must).",
+    "Record the video from docs/VIDEO_SHOT_LIST.md, upload it to a public URL, and confirm it plays logged out.",
+    "Press Publish before 10:59 PM Central, Aug 31 2026."
+  ],
+  "canonical_promotion": false
+}
