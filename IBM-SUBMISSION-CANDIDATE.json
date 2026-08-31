@@ -7,10 +7,12 @@
     "visibility": "PUBLIC",
     "default_branch": "main",
     "release_commit_sha": "33c0bbf70e365c986612e69cca300e7b96dc2028",
-    "reviewable_tip_sha": "e22f1c2a112a80b723bb795cc1e231b56b020f01",
+    "reviewable_tip_sha": "627f997e75cf09571771147e334503a78a2f2297",
     "commits_above_release": [
       {"sha": "af15fa35ae608cf475cefbb9939370d5b89b0a0a", "summary": "one-line Prediction Explorer footer claim reduction (SHAP EXPLANATIONS -> PROTOTYPE SCORING) plus human-factors doc; re-verified, coherence/guard/evidence/frontend suites exit 0"},
-      {"sha": "e22f1c2a112a80b723bb795cc1e231b56b020f01", "summary": "this review package"}
+      {"sha": "e22f1c2a112a80b723bb795cc1e231b56b020f01", "summary": "review package"},
+      {"sha": "9848654", "summary": "Known Limitations disclosures: F10.7 derived from NOAA monthly solar-cycle indices so 3d/7d windows are not authentic short-window variability; Prediction Explorer collapses flux_3d_avg and flux_7d_avg onto one slider input; dashboard live path is NASA DONKI, not NOAA SWPC. Adds the Author block identifying the individual entrant."},
+      {"sha": "627f997e75cf09571771147e334503a78a2f2297", "summary": "reviewable tip record"}
     ],
     "readme_renders_publicly": true,
     "readme_public_check": {
@@ -24,6 +26,8 @@
     "command": "python -m pytest -q",
     "collected": 140,
     "exit_code": 0,
+    "verified_at_sha": "627f997e75cf09571771147e334503a78a2f2297",
+    "note": "Commits above the release commit change only README and docs, so the collected count is unchanged from the run recorded below. Re-verified at 627f997 with a unique basetemp: targeted P0 regression exit 0, full suite exit 0, all three model artifact digests MATCH against their metadata with repository-relative paths, tree unchanged and HEAD unmoved after verification.",
     "per_file": {
       "tests/test_crosspage_coherence.py": 17,
       "tests/test_crosspage_coherence_guards.py": 16,
@@ -95,6 +99,7 @@
     "Verification / Tests": true,
     "Known Limitations": true,
     "Research Experiments": true,
+    "Author": true,
     "racing_language_present": false
   },
   "video": {
