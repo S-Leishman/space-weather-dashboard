@@ -66,5 +66,7 @@ desktop.ini
 .pytest_basetemp*/
 .aevion_check.py
 
-# pytest scratch dirs (generated .joblib artifacts must never be committed)
-.pytest_temp/
+# pytest scratch dirs (generated .joblib artifacts must never be committed).
+# Glob, not an exact name: isolated runs create .pytest_temp2, .pytest_temp3,
+# and a bare `.pytest_temp/` rule would let those through a `git add -A`.
+.pytest_temp*/
