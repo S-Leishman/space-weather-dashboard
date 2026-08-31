@@ -345,6 +345,6 @@ with st.expander("🔍 Raw Feature Vector", expanded=False):
 st.markdown(
     '<div style="text-align:center;padding:1rem 0 0;font-family:IBM Plex Mono,monospace;'
     'font-size:0.62rem;color:#4A5568;letter-spacing:0.1em;">'
-    'SWL PREDICTION EXPLORER · INTERACTIVE INFERENCE · SHAP EXPLANATIONS</div>',
+    'SWL PREDICTION EXPLORER · INTERACTIVE INFERENCE · PROTOTYPE SCORING</div>',
     unsafe_allow_html=True,
 )
