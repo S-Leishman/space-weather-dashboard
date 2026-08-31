@@ -67,6 +67,11 @@ desktop.ini
 .aevion_check.py
 
 # pytest scratch dirs (generated .joblib artifacts must never be committed).
-# Glob, not an exact name: isolated runs create .pytest_temp2, .pytest_temp3,
-# and a bare `.pytest_temp/` rule would let those through a `git add -A`.
-.pytest_temp*/
+#
+# Match on the .pytest_ prefix rather than on individual basetemp names. Naming
+# each one has now failed three times: .pytest_basetemp*, then .pytest_temp*,
+# then .pytest_run_final2/ and .pytest_run_final3/, which slipped past both
+# rules and which `git add -A --dry-run` confirmed would stage dozens of
+# generated .joblib files into a public repository. Any --basetemp a future run
+# chooses is covered by the prefix; no new rule is needed per name.
+.pytest_*/
