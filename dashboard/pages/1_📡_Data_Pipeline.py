@@ -114,7 +114,20 @@ if manifest_p.exists():
         if mrows:
             telemetry_table(mrows, ["Source","SHA-256 (16ch)","Path"])
 else:
-    st.info("No ingest manifest found. Run notebook 01 to fetch data from NASA DONKI.")
+    # The MISSING rows above are real and are deliberately not suppressed. They
+    # refer to the RAW DONKI/SWPC pulls, which are not committed to the repo.
+    # The PROCESSED feature artifact that HOME's provenance record describes is
+    # a different artifact and is present — stating both prevents a reader from
+    # concluding that one of the two pages is lying.
+    st.info(
+        "No ingest manifest found — the RAW NASA DONKI / NOAA SWPC pulls listed above "
+        "are genuinely absent from this checkout (they are not committed). "
+        "Run notebook 01 with a NASA API key to fetch them.\n\n"
+        "This is NOT a path-resolution problem: this page and the Home page resolve the "
+        "same artifact root (`dashboard/data/`). The PROCESSED feature artifact "
+        "described by the Home provenance record is a different artifact class and is "
+        "present — see Feature Provenance below."
+    )
 
 st.markdown('<hr style="border-color:#1C2640;margin:0.8rem 0;">', unsafe_allow_html=True)
 

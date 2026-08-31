@@ -314,12 +314,25 @@ def positive_class_column(model) -> int:
     """
     Index of the column of ``predict_proba`` that holds P(class == 1).
 
-    Never assume column 1: it is only correct when ``classes_ == [0, 1]``.
+    Fails closed. Never assume column 1 — that is only correct when
+    ``classes_ == [0, 1]``, and guessing is how an unknown positive-class
+    identity silently becomes an inverted probability. A model with no
+    ``classes_``, or whose classes do not include the positive class, is a
+    model-identity failure and raises rather than returning a guess.
     """
-    classes = list(getattr(model, "classes_", [0, 1]))
-    if 1 in classes:
-        return classes.index(1)
-    return len(classes) - 1
+    classes = getattr(model, "classes_", None)
+    if classes is None:
+        raise ValueError(
+            "Cannot resolve the positive-class column: the estimator exposes no "
+            "`classes_`, so the layout of predict_proba is unknown."
+        )
+    classes = list(classes)
+    if 1 not in classes:
+        raise ValueError(
+            f"Cannot resolve the positive-class column: positive class 1 is absent "
+            f"from classes_={classes!r}. Refusing to fall back to a default column."
+        )
+    return classes.index(1)
 
 
 def load_kp_history() -> pd.DataFrame:

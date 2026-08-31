@@ -87,7 +87,8 @@ feat_names    = model_meta.get("feature_names") or [
 
 if not model_loaded:
     st.warning("⚠️ No trained model found. Run `notebooks/04_model_training.ipynb` first. "
-               "Demo mode shows synthetic outputs.")
+               "No score is produced without a model — every score readout on this page "
+               "reports UNAVAILABLE rather than a substitute number.")
 else:
     st.warning("Prototype model artifact: generated from synthetic test data; not operationally qualified.")
 
@@ -269,32 +270,43 @@ st.markdown('<hr style="border-color:#1C2640;margin:0.8rem 0;">', unsafe_allow_h
 section_label("Kp Index Sensitivity Sweep")
 
 kp_range = np.linspace(0, 9, 46)
-sweep_probs = []
+sweep_probs: list[float] = []
 
+# Same contract as the single-scenario path: the sweep is drawn only from real
+# model output. Without a model there is no curve — a fabricated one would be
+# read as the model's actual sensitivity to Kp, which is exactly the claim this
+# page must not invent.
 for kp_val in kp_range:
+    if not model_loaded:
+        break
     Xsw, _ = build_single_feature_vector(
         kp=float(kp_val), f10_7=flux, launch_hour=hour, day_of_year=doy,
         cme_score=cme_score, gst_level=gst,
         xclass_72h=int(xclass), mclass_72h=int(mclass),
         feature_names=feat_names_used,
     )
-    if model_loaded:
-        try:
-            p = float(model.predict_proba(Xsw)[0][1])
-        except Exception:
-            p = 0.5
-    else:
-        raw2 = kp_val * 0.12 + gst * 0.15 + int(xclass) * 0.2 - flux/300*0.1
-        p = max(0.05, min(0.95, 0.75 - raw2 * 0.08))
-    sweep_probs.append(p)
+    try:
+        sweep_probs.append(
+            float(model.predict_proba(Xsw)[0][positive_class_column(model)])
+        )
+    except Exception:
+        sweep_probs = []
+        break
+
+if not sweep_probs:
+    st.info(
+        "Kp sensitivity sweep UNAVAILABLE — no model is loaded, so no scores can be "
+        "produced across the Kp range. No curve is drawn."
+    )
+    kp_range = []
 
 fig_sweep = go.Figure()
 fig_sweep.add_trace(go.Scatter(
     x=kp_range, y=sweep_probs,
     line=dict(color="#00D4FF", width=2),
     fill="tozeroy", fillcolor="rgba(0,212,255,0.06)",
-    name="P(GO)",
-    hovertemplate="Kp=%{x:.1f} → P(GO)=%{y:.3f}<extra></extra>",
+    name="Prototype model score",
+    hovertemplate="Kp=%{x:.1f} → Prototype model score=%{y:.3f}<extra></extra>",
 ))
 # Current Kp marker
 fig_sweep.add_vline(x=kp, line_dash="dot", line_color=gauge_color,
@@ -309,7 +321,7 @@ fig_sweep.add_hline(y=0.40, line_dash="dot", line_color="#FFD700",
                     annotation_font=dict(color="#FFD700",size=9,family="IBM Plex Mono"),
                     annotation_position="top right")
 fig_sweep.update_layout(**plotly_dark_layout(
-    height=250, xaxis_title="Kp Index", yaxis_title="P(GO)",
+    height=250, xaxis_title="Kp Index", yaxis_title="Prototype model score",
     yaxis=dict(range=[0,1.05], gridcolor="#1C2640", linecolor="#1C2640", tickcolor="#4A5568"),
 ))
 st.plotly_chart(fig_sweep, use_container_width=True, config={"displayModeBar":False})

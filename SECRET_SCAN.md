@@ -60,7 +60,7 @@ ghp_[A-Za-z0-9]{20,}   (GitHub personal access token)
 sk-[A-Za-z0-9]{20,}    (OpenAI-style key)
 xox[baprs]-            (Slack token)
 DEMO_KEY               (NASA placeholder — confirm it is the placeholder, not a real key)
-C:\Users\Scott         (personal filesystem path / PII)
+<HOME>         (personal filesystem path / PII)
 ```
 
 Credential-bearing **file types**, by name and extension:
@@ -115,7 +115,7 @@ dashboard/models/xgboost_metadata.json:17
 dashboard/models/logistic_regression_metadata.json:20
 dashboard/models/random_forest_metadata.json:22
 
-  "model_file": "C:\\Users\\Scott\\Desktop\\Aevion LLC\\space-weather-dashboard\\dashboard\\models\\<name>.joblib"
+  "model_file": "<REPO_ROOT>\\dashboard\\models\\<name>.joblib"
 ```
 
 **Severity: low. This is not a blocker for the secret scan, and it grants no access.** It is an information-hygiene item: it publishes the owner's Windows username and local directory layout. Standard practice is to store a path relative to the repository root instead.
@@ -149,7 +149,7 @@ Re-run from `space-weather-dashboard/`:
 rg --hidden --no-ignore -n -i `
   -e "api[_-]?key" -e "secret" -e "token" -e "password" -e "credential" `
   -e "BEGIN [A-Z ]*PRIVATE KEY" -e "AKIA[0-9A-Z]{16}" -e "ghp_[A-Za-z0-9]{20,}" `
-  -e "sk-[A-Za-z0-9]{20,}" -e "xox[baprs]-" -e "C:\\\\Users\\\\Scott" `
+  -e "sk-[A-Za-z0-9]{20,}" -e "xox[baprs]-" -e "<HOME>" `
   -g '!**/__pycache__/**' -g '!**/.git/**' -g '!*.joblib'
 
 Get-ChildItem -Recurse -Force -File -Include ".env",".env.*","*.pem","*.key","*.p12","*.pfx","secrets.toml","credentials*"

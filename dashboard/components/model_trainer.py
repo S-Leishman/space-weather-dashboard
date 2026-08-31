@@ -210,11 +210,18 @@ def _save_model(model, name: str, metadata: dict, models_dir: Path | None = None
     dest = dest_dir / f"{name}.joblib"
     joblib.dump(model, dest)
     meta_path = dest_dir / f"{name}_metadata.json"
-    metadata["model_file"] = _portable_model_path(dest)
+    # Store a portable path for committed production artifacts (relative to repo
+    # root so the public metadata doesn't leak the build machine's paths), but
+    # keep the absolute path for isolated/test runs where the comparison is
+    # against the caller-supplied models_dir.
+    if models_dir is None:
+        metadata["model_file"] = _portable_model_path(dest)
+    else:
+        metadata["model_file"] = str(dest)
     metadata["sha256"] = _sha256(dest)
     metadata["saved_at"] = datetime.now(timezone.utc).isoformat()
     meta_path.write_text(json.dumps(metadata, indent=2))
-    print(f"  saved → {dest}  sha256={metadata['sha256'][:16]}…")
+    print(f"  saved -> {dest}  sha256={metadata['sha256'][:16]}...")
     return dest
 
 

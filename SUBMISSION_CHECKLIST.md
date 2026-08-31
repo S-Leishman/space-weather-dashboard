@@ -60,7 +60,7 @@ The authenticated `gh` token holds `gist`, `read:org`, and `repo`, but not `work
 
 ```powershell
 gh auth refresh -h github.com -s workflow
-cd "C:\Users\Scott\Desktop\Aevion LLC\space-weather-dashboard"
+cd "<HOME>\Desktop\Aevion LLC\space-weather-dashboard"
 git push -u origin main
 ```
 
@@ -161,7 +161,7 @@ Steps 1 and 8 are the two that cannot be shortened and do not depend on anything
 
 Items found by this lane that fall inside application-code territory and were **not** touched:
 
-1. **Personal filesystem paths in model metadata.** `dashboard/models/{xgboost,logistic_regression,random_forest}_metadata.json` each carry `"model_file": "C:\\Users\\Scott\\Desktop\\Aevion LLC\\..."`. Not a credential and not a release blocker, but it publishes the owner's username and local directory layout, and the absolute path is unresolvable for anyone who clones the repository. Fix: emit a repository-relative path when writing metadata. Detail in [`SECRET_SCAN.md`](SECRET_SCAN.md) HOLD-1.
+1. **Personal filesystem paths in model metadata.** `dashboard/models/{xgboost,logistic_regression,random_forest}_metadata.json` each carry `"model_file": "<HOME>\\Desktop\\Aevion LLC\\..."`. Not a credential and not a release blocker, but it publishes the owner's username and local directory layout, and the absolute path is unresolvable for anyone who clones the repository. Fix: emit a repository-relative path when writing metadata. Detail in [`SECRET_SCAN.md`](SECRET_SCAN.md) HOLD-1.
 2. **Corrected metrics, with sample size.** Once the inverted-probability and ROC-AUC-from-hard-labels defects are fixed and the models retrained, report the figures **with the validation-split row count** so they can be added to the README honestly. Until then the README deliberately quotes none.
 3. **`pyproject.toml` is missing its `[project]` table.** `name` and `version` sit as bare top-level keys with no section header. Valid TOML, and `[tool.pytest.ini_options]` still works, so this breaks nothing today — but the file is not a conforming project manifest and `pip install -e .` would fail. Low priority.
 4. **Dependency pinning in `requirements.txt`.** Left unedited to avoid colliding with concurrent changes. Must be applied by whoever commits last, before deployment. Specification in [`DEPLOYMENT.md`](DEPLOYMENT.md), Gaps 8 and 9.

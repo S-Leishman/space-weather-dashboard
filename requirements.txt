@@ -14,7 +14,11 @@ plotly>=5.18.0
 scikit-learn>=1.3.0
 xgboost>=2.0.0
 joblib>=1.3.0
-shap>=0.43.0
+# shap intentionally omitted: the recorded champion is a Pipeline, which the
+# explainer guard refuses before any TreeExplainer call, so shap is unused at
+# runtime. Installing it would add numba/llvmlite to the deployment build for
+# a code path that is never taken. Explainability reports UNAVAILABLE, which
+# is the state the test suite actually exercises.
 
 # Dashboard
 streamlit>=1.28.0
