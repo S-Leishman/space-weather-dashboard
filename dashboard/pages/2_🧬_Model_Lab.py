@@ -55,25 +55,18 @@ best_name    = metrics_sum.get("best_model", "") if has_metrics else ""
 if has_metrics:
     st.warning("Prototype metrics only: bundled artifacts were generated from synthetic test data and are not operational qualification evidence.")
 
-# Demo metrics when models not yet trained
-DEMO_METRICS = [
-    {"model":"logistic_regression","accuracy":0.7917,"precision":0.8421,
-     "recall":0.7619,"f1":0.8000,"roc_auc":0.8312,"log_loss":0.4871},
-    {"model":"random_forest",      "accuracy":0.8333,"precision":0.8571,
-     "recall":0.8571,"f1":0.8571,"roc_auc":0.8968,"log_loss":0.4023},
-    {"model":"xgboost",            "accuracy":0.8542,"precision":0.8750,
-     "recall":0.8571,"f1":0.8659,"roc_auc":0.9143,"log_loss":0.3812},
-]
-
-display_metrics = metrics_list if has_metrics else DEMO_METRICS
+# There is deliberately no fabricated fallback. The previous metrics-fallback block
+# published invented accuracy/AUC figures under real metric labels whenever the
+# artifacts were absent, which is indistinguishable from a measurement.
+display_metrics = metrics_list
 demo_note = not has_metrics
 
 if demo_note:
-    st.info(
-        "📊 Showing **illustrative demo metrics** — run `notebooks/04_model_training.ipynb` "
-        "to replace with real training results."
+    st.warning(
+        "Model metrics NOT_EVALUATED — `models/metrics_summary.json` is absent, so no "
+        "metrics are shown. Run `notebooks/04_model_training.ipynb` to produce them."
     )
-    best_name = "xgboost"
+    best_name = ""
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MODEL COMPARISON OVERVIEW
@@ -157,9 +150,19 @@ with col_radar:
 
 with col_bar:
     section_label("ROC-AUC Comparison")
-    model_names = [MODEL_LABELS.get(m["model"],m["model"]) for m in display_metrics]
-    auc_vals    = [m.get("roc_auc",0) for m in display_metrics]
-    colors      = [MODEL_COLORS.get(m["model"],"#8892A4") for m in display_metrics]
+    # A refused AUC (insufficient class support / single-class split) arrives as
+    # None. It is charted as absent rather than coerced to a number.
+    _scored = [m for m in display_metrics if m.get("roc_auc") is not None]
+    _refused = [m for m in display_metrics if m.get("roc_auc") is None]
+    model_names = [MODEL_LABELS.get(m["model"],m["model"]) for m in _scored]
+    auc_vals    = [m["roc_auc"] for m in _scored]
+    colors      = [MODEL_COLORS.get(m["model"],"#8892A4") for m in _scored]
+    if _refused:
+        st.caption(
+            "ROC-AUC REFUSED (not charted) for: "
+            + ", ".join(MODEL_LABELS.get(m["model"], m["model"]) for m in _refused)
+            + " — " + (_refused[0].get("roc_auc_note") or "insufficient validation support")
+        )
 
     fig_auc = go.Figure()
     fig_auc.add_trace(go.Bar(

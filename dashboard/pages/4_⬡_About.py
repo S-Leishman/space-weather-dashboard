@@ -102,16 +102,20 @@ st.markdown(
     environmental constraint and model space weather qualitatively.
     <br><br>
     This project addresses that gap by building an end-to-end AI pipeline that ingests
-    real-time <span style="color:#00D4FF;">NASA DONKI telemetry</span>, engineers
+    <span style="color:#00D4FF;">NASA DONKI telemetry</span>, engineers
     temporally-aware features (rolling Kp averages, CME arrival scores, cyclical time
     encodings), and trains an ensemble of classifiers (Logistic Regression, Random Forest,
-    <span style="color:#00FF41;">XGBoost</span>) to predict binary launch go/no-go decisions.
-    The best model is explained using <span style="color:#FF6B35;">SHAP</span> to make
-    predictions interpretable for mission planners.
+    <span style="color:#00FF41;">XGBoost</span>) to score binary launch go/no-go decisions.
     <br><br>
+    <span style="color:#FF6B35;">IMPORTANT — Prototype status:</span> the training labels
+    are synthetic and do not reflect real launch outcomes, so the model output is a
+    prototype score, NOT a calibrated launch-success probability. Feature importance
+    (when available) is sourced from the fitted estimator's coefficients; SHAP
+    attribution is unavailable for the selected logistic-regression champion and is
+    not shown. <br><br>
     An interactive <span style="color:#00D4FF;">Streamlit dashboard</span> surfaces current
-    conditions, historical trends, and per-prediction explanations with a gauge-style launch
-    probability readout. All data artifacts carry SHA-256 hashes in a provenance file, all
+    conditions, historical trends, and feature-importance displays with a gauge-style
+    prototype score readout. All data artifacts carry SHA-256 hashes in a provenance file, all
     model checkpoints are versioned with metadata JSONs, and a
     <span style="color:#4A5568;">GitHub Actions CI pipeline</span> validates correctness on
     every push. Built throughout with <span style="color:#78A9FF;">IBM Bob</span>.
@@ -130,26 +134,46 @@ section_label("Judging Criteria Mapping")
 CRITERIA = [
     ("Technical Execution",
      "End-to-end ML pipeline: ingestion → feature engineering → LR/RF/XGBoost → SHAP. "
-     "SHA-256 provenance on every artifact. pytest suite with CI on GitHub Actions."),
+     "SHA-256 provenance on every artifact. pytest suite with CI on GitHub Actions. "
+     "Label-status transparency: synthetic labels, prototype score readout, "
+     "UNAVAILABLE states for refused/unsupported metrics."),
     ("Innovation",
      "Quantitative space-weather–driven launch go/no-go via CME arrival scoring and "
-     "cyclical temporal features. Per-prediction SHAP explanations for mission planners. "
-     "Animated starfield design with CRT overlay."),
+     "cyclical temporal features. Feature-importance displays sourced from the fitted "
+     "estimator (abs(coef_) for logistic regression). Animated starfield design with "
+     "CRT overlay."),
     ("Challenge Fit",
-     "Directly advances space exploration: AI system reduces risk of launching into "
-     "geomagnetically active conditions. Consumes real NASA DONKI and NOAA SWPC data."),
+     "Prototype explores how space-weather signals (NASA DONKI) could be incorporated "
+     "into an evidence-aware launch scenario analysis. Consumes real NASA DONKI and "
+     "NOAA SWPC data."),
     ("Feasibility",
      "Fully self-contained Python stack. Runs on a laptop with pip install. "
      "DEMO_KEY works without registration. No paid infrastructure required."),
     ("Real-World Impact",
-     "Mission planners can model hypothetical launch windows in real time. "
-     "System is extensible to satellite operators, CubeSat launches, and crewed missions."),
+     "Users can interactively explore hypothetical launch scenarios against "
+     "space-weather context. System is extensible to satellite operators, "
+     "CubeSat launches, and crewed missions."),
+]
+
+# Legend: IMPLEMENTED vs PROTOTYPE vs FUTURE
+LEGEND = [
+    ("IMPLEMENTED", "Dashboard rendering, feature-importance display, model loading, "
+     "path-coherent artifact discovery, pytest gate."),
+    ("PROTOTYPE", "GO score readout — model trained on synthetic labels; not a "
+     "calibrated launch-success probability."),
+    ("FUTURE / NOT OPERATIONALLY QUALIFIED", "SHAP per-prediction attribution "
+     "(TreeExplainer needs a bare tree model), real DONKI ingestion, real "
+     "launch-outcome labels."),
 ]
 
 crit_rows = [{"Criterion": c, "Justification": j} for c, j in CRITERIA]
 telemetry_table(crit_rows, ["Criterion","Justification"])
 
 st.markdown('<hr style="border-color:#1C2640;margin:0.8rem 0;">', unsafe_allow_html=True)
+
+section_label("Capability Status Legend")
+legend_rows = [{"Status": s, "Description": d} for s, d in LEGEND]
+telemetry_table(legend_rows, ["Status","Description"])
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # DATA SOURCES

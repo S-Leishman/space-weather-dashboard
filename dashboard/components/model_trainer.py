@@ -6,6 +6,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import sys
+import tempfile
 import warnings
 from datetime import datetime, timezone
 from pathlib import Path
@@ -29,9 +32,22 @@ import xgboost as xgb
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
+MIN_CLASS_SUPPORT = 2
+
+
+class ArtifactIsolationError(RuntimeError):
+    """Raised when train_all/_save_model would write into the packaged
+    dashboard/models/ directory (i.e. contamination of production artifacts
+    during a test or ad-hoc run)."""
+    pass
+
 MODELS_DIR = Path(__file__).parent.parent / "models"
+# Captured at import so a monkeypatch of MODELS_DIR cannot move the guard's
+# notion of "the packaged production artifact directory".
+PACKAGED_MODELS_DIR = (Path(__file__).parent.parent / "models").resolve()
 PROC_DIR   = Path(__file__).parent.parent / "data" / "processed"
 MODELS_DIR.mkdir(parents=True, exist_ok=True)
+_PACKAGED_MODELS_DIR = PACKAGED_MODELS_DIR  # backwards-compatible alias
 
 FEATURE_COLS = [
     "kp_3d_avg", "kp_7d_avg",
@@ -43,6 +59,24 @@ FEATURE_COLS = [
     "day_sin", "day_cos",
     "hour_sin", "hour_cos",
 ]
+
+
+def _running_under_pytest() -> bool:
+    return "PYTEST_CURRENT_TEST" in os.environ or "pytest" in sys.modules
+
+
+def _resolve_models_dir(models_dir: Path | None) -> Path:
+    """Destination for training artifacts.
+
+    An explicit directory always wins. Otherwise a run under pytest is given a
+    throwaway directory, so an un-isolated test can never silently overwrite the
+    shipped models; only a real run writes to the packaged directory.
+    """
+    if models_dir is not None:
+        return Path(models_dir)
+    if _running_under_pytest():
+        return Path(tempfile.mkdtemp(prefix="swl-models-"))
+    return MODELS_DIR
 
 
 def _sha256(path: Path) -> str:
@@ -75,6 +109,11 @@ def _evaluate(model, X_test: np.ndarray, y_test: np.ndarray, label: str) -> dict
     auc_note = None
     if n_pos == 0 or n_neg == 0:
         auc_note = f"undefined: validation split contains only one class (pos={n_pos}, neg={n_neg})"
+    elif n_pos < MIN_CLASS_SUPPORT or n_neg < MIN_CLASS_SUPPORT:
+        auc_note = (
+            f"insufficient class support: need ≥{MIN_CLASS_SUPPORT} of each class "
+            f"(pos={n_pos}, neg={n_neg}) for a stable ROC-AUC"
+        )
     elif float(np.ptp(y_proba)) == 0.0:
         auc_note = (
             f"degenerate: model returns a constant probability ({y_proba[0]:.4f}) "
@@ -138,10 +177,21 @@ def cross_validated_auc(model_factory, X: np.ndarray, y: np.ndarray,
     }
 
 
-def _save_model(model, name: str, metadata: dict) -> Path:
-    dest = MODELS_DIR / f"{name}.joblib"
+def _save_model(model, name: str, metadata: dict, models_dir: Path | None = None) -> Path:
+    dest_dir = Path(models_dir) if models_dir is not None else MODELS_DIR
+    # Contamination guard. Under pytest, writing into the packaged production
+    # artifact directory is refused before any bytes change — that is the exact
+    # mechanism that previously overwrote shipped models during a test run.
+    if _running_under_pytest() and dest_dir.resolve() == PACKAGED_MODELS_DIR:
+        raise ArtifactIsolationError(
+            f"Refusing to write into the packaged artifact directory "
+            f"({PACKAGED_MODELS_DIR}) during a test run. Pass an explicit "
+            f"models_dir for isolated runs."
+        )
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / f"{name}.joblib"
     joblib.dump(model, dest)
-    meta_path = MODELS_DIR / f"{name}_metadata.json"
+    meta_path = dest_dir / f"{name}_metadata.json"
     metadata["model_file"] = str(dest)
     metadata["sha256"] = _sha256(dest)
     metadata["saved_at"] = datetime.now(timezone.utc).isoformat()
@@ -170,8 +220,19 @@ def load_features(path: Path | None = None) -> tuple[np.ndarray, np.ndarray, lis
 def train_all(
     X: np.ndarray, y: np.ndarray, feature_names: list[str],
     test_size: float = 0.2, random_state: int = 42,
+    models_dir: Path | None = None,
 ) -> dict[str, Any]:
-    """Train LR, RF, XGBoost and return results dict."""
+    """Train LR, RF, XGBoost and return results dict.
+
+    When ``models_dir`` is supplied, artifacts are written there instead of the
+    packaged ``dashboard/models/``. A run under pytest that supplies no explicit
+    directory is redirected to a throwaway one, and ``_save_model`` refuses any
+    test-time write into the packaged directory, raising
+    ``ArtifactIsolationError`` before any bytes change. Together these stop a
+    test run from overwriting shipped production models.
+    """
+    out_dir = _resolve_models_dir(models_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=test_size, stratify=y, random_state=random_state
     )
@@ -202,7 +263,7 @@ def train_all(
         "feature_names": feature_names,
         "hyperparameters": {"C": 1.0, "max_iter": 1000},
         **{k: v for k, v in lr_metrics.items() if k != "model"},
-    })
+    }, models_dir=out_dir)
     results["models"]["logistic_regression"] = lr_pipe
 
     # ── 2. Random Forest + GridSearchCV ──────────────────────────────────────
@@ -214,7 +275,9 @@ def train_all(
             "max_depth": [None, 8, 16],
             "min_samples_split": [2, 5],
         },
-        cv=cv, scoring="roc_auc", n_jobs=-1, verbose=0,
+                # n_jobs=1: loky workers were being killed mid-search on this
+        # memory-constrained host, surfacing as TerminatedWorkerError.
+        cv=cv, scoring="roc_auc", n_jobs=1, verbose=0,
     )
     rf_grid.fit(X_train, y_train)
     rf_best = rf_grid.best_estimator_
@@ -227,7 +290,7 @@ def train_all(
         "hyperparameters": rf_grid.best_params_,
         "cv_best_score": round(rf_grid.best_score_, 4),
         **{k: v for k, v in rf_metrics.items() if k != "model"},
-    })
+    }, models_dir=out_dir)
     results["models"]["random_forest"] = rf_best
 
     # ── 3. XGBoost ─────────────────────────────────────────────────────────
@@ -264,7 +327,7 @@ def train_all(
         "feature_names": feature_names,
         "best_iteration": getattr(xgb_model, "best_iteration", None),
         **{k: v for k, v in xgb_metrics.items() if k != "model"},
-    })
+    }, models_dir=out_dir)
     results["models"]["xgboost"] = xgb_model
 
     # ── Determine validation champion by ROC-AUC ─────────────────────────────
@@ -274,7 +337,7 @@ def train_all(
     print(f"\n  Validation champion: {best_metric['model']}  AUC={best_metric['roc_auc']}")
 
     # Save metrics summary — every number below comes from this one run.
-    summary_path = MODELS_DIR / "metrics_summary.json"
+    summary_path = out_dir / "metrics_summary.json"
     summary_path.write_text(json.dumps({
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "metrics": results["metrics"],

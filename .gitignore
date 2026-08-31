@@ -61,3 +61,7 @@ desktop.ini
 .vscode/
 .idea/
 *.swp
+
+# pytest scratch dirs (contain generated model binaries)
+.pytest_basetemp*/
+.aevion_check.py

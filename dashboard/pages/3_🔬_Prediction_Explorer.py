@@ -27,7 +27,16 @@ from dashboard.components.theme import (
 from dashboard.components.utils import (
     MODELS_DIR,
     build_single_feature_vector, shap_top_n,
-    load_best_model_metadata, load_metrics_summary
+    load_best_model_metadata, load_metrics_summary,
+    load_active_model, explainer_state, load_provenance, positive_class_column,
+)
+from dashboard.components.evidence import (
+    HUMAN_AUTHORITY_NOTICE,
+    build_evidence_package,
+    policy_check,
+    render_decision_chain,
+    render_evidence_drawer,
+    render_policy_state,
 )
 
 st.set_page_config(
@@ -51,15 +60,10 @@ st.markdown('<hr style="border-color:#1C2640;margin:0.6rem 0 1rem;">', unsafe_al
 # ── Model loading ─────────────────────────────────────────────────────────────
 @st.cache_resource(show_spinner=False)
 def _load_model():
-    import joblib
-    for name in ["xgboost", "random_forest", "logistic_regression"]:
-        p = MODELS_DIR / f"{name}.joblib"
-        if p.exists():
-            model = joblib.load(p)
-            meta_p = MODELS_DIR / f"{name}_metadata.json"
-            meta   = json.loads(meta_p.read_text()) if meta_p.exists() else {}
-            return model, name, meta
-    return None, None, {}
+    # Identity comes from the shared resolver, never from a preference order
+    # local to this page — that is how this page served xgboost while HOME
+    # served the recorded validation champion.
+    return load_active_model()
 
 @st.cache_resource(show_spinner=False)
 def _load_explainer(model_name: str):
@@ -120,33 +124,46 @@ X_vec, feat_names_used = build_single_feature_vector(
     feature_names=feat_names,
 )
 
+# No synthetic fallback: if the model cannot score the scenario, the score is
+# absent and every downstream readout says so. Inventing a plausible number here
+# is indistinguishable from a real inference to anyone reading the screen.
+prob_go = None
 if model_loaded:
     try:
-        prob_go = float(model.predict_proba(X_vec)[0][1])
+        prob_go = float(model.predict_proba(X_vec)[0][positive_class_column(model)])
     except Exception:
-        prob_go = 0.5
-else:
-    # Reproducible synthetic probability from inputs
-    raw   = kp * 0.12 + (gst * 0.15) + (int(xclass) * 0.2) - (flux / 300 * 0.1)
-    prob_go = max(0.05, min(0.95, 0.75 - raw * 0.08))
+        prob_go = None
 
-verdict_txt = "GO"    if prob_go >= 0.65 else "HOLD"  if prob_go >= 0.40 else "SCRUB"
-gauge_color = "#00FF41" if prob_go >= 0.65 else "#FFD700" if prob_go >= 0.40 else "#FF4444"
-verdict_cls = {"GO":"swl-verdict-go","HOLD":"swl-verdict-hold","SCRUB":"swl-verdict-scrub"}[verdict_txt]
+prediction_available = prob_go is not None
+if not prediction_available:
+    verdict_txt, gauge_color = "UNAVAILABLE", "#8892A4"
+elif prob_go >= 0.65:
+    verdict_txt, gauge_color = "GO", "#00FF41"
+elif prob_go >= 0.40:
+    verdict_txt, gauge_color = "HOLD", "#FFD700"
+else:
+    verdict_txt, gauge_color = "SCRUB", "#FF4444"
+verdict_cls = {"GO":"swl-verdict-go","HOLD":"swl-verdict-hold",
+               "SCRUB":"swl-verdict-scrub"}.get(verdict_txt, "swl-verdict-hold")
 
 st.markdown('<hr style="border-color:#1C2640;margin:0.8rem 0;">', unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PREDICTION RESULT
 # ═══════════════════════════════════════════════════════════════════════════════
-section_label("Inference Result")
+section_label("Prototype GO Score")
+st.caption(
+    "Prototype GO Score — a model score, NOT a calibrated launch-success probability. "
+    "The training label is synthetic and independent of the space-weather features."
+)
+render_decision_chain(st, active="MODEL INFERENCE")
 
 col_g, col_v, col_b = st.columns([1.2, 1, 1.8])
 
 with col_g:
     fig_g = go.Figure(go.Indicator(
         mode="gauge+number",
-        value=round(prob_go * 100, 1),
+        value=round(prob_go * 100, 1) if prediction_available else 0,
         number={"suffix":"%","font":{"size":36,"color":gauge_color,
                                      "family":"Orbitron,monospace"}},
         gauge={
@@ -168,23 +185,33 @@ with col_g:
     st.plotly_chart(fig_g, use_container_width=True, config={"displayModeBar":False})
 
 with col_v:
+    _score_txt = (
+        f"Prototype model score = {prob_go:.4f}" if prediction_available
+        else "Prototype model score = UNAVAILABLE"
+    )
     st.markdown(
         f'<div style="display:flex;flex-direction:column;align-items:center;'
         f'justify-content:center;height:200px;gap:12px;">'
         f'<div class="swl-verdict {verdict_cls}" style="font-size:1.2rem;padding:0.7rem 1.6rem;">'
         f'{verdict_txt}</div>'
         f'<div style="font-family:IBM Plex Mono,monospace;font-size:0.68rem;color:#4A5568;">'
-        f'p(GO) = {prob_go:.4f}</div>'
+        f'{_score_txt}</div>'
         f'<div style="font-family:IBM Plex Mono,monospace;font-size:0.62rem;color:#4A5568;">'
-        f'Model: {model_name or "demo"}</div>'
+        f'SELECTED MODEL: {model_name or "UNAVAILABLE"}</div>'
+        f'<div style="font-family:IBM Plex Mono,monospace;font-size:0.58rem;color:#4A5568;">'
+        f'VALIDATION CHAMPION: {load_metrics_summary().get("best_model") or "NONE"}</div>'
         f'</div>',
         unsafe_allow_html=True,
     )
 
 with col_b:
     section_label("SHAP Explanation")
+    # Availability is decided by the shared explainer_state so this page cannot
+    # disagree with HOME about whether SHAP exists.
+    _exp = explainer_state(model)
     shap_done = False
-    if model_loaded and model_name in ("xgboost","random_forest"):
+
+    if _exp["available"]:
         explainer = _load_explainer(model_name)
         if explainer:
             try:
@@ -194,22 +221,45 @@ with col_b:
                 top_shap = shap_top_n(sv[0], feat_names_used, n=8)
                 shap_bar_chart(top_shap)
                 shap_done = True
+                st.caption("▲ Green pushes GO · ▼ Red pushes SCRUB")
             except Exception:
-                pass
+                shap_done = False
+
     if not shap_done:
-        demo_shap = [
-            {"feature": "kp_3d_avg",        "shap_value": -0.182 * (kp / 5)},
-            {"feature": "flux_3d_avg",       "shap_value":  0.110 * (flux / 150)},
-            {"feature": "gst_level",         "shap_value": -0.087 * gst},
-            {"feature": "xclass_72h",        "shap_value": -0.064 * int(xclass)},
-            {"feature": "cme_arrival_score", "shap_value": -0.039 * min(cme_score/1000,1)},
-            {"feature": "kp_lag1",           "shap_value": -0.031 * (kp / 5)},
-            {"feature": "day_sin",           "shap_value":  0.020},
-            {"feature": "hour_sin",          "shap_value":  0.012},
-        ]
-        shap_bar_chart(demo_shap)
-        st.caption("⚠️ Synthetic SHAP · run notebook 04 for real values")
-    st.caption("▲ Green pushes GO · ▼ Red pushes SCRUB")
+        # No attribution values are shown. The previous synthetic vector was
+        # never computed from this model, and a plausible-looking attribution
+        # is the most misleading kind of fabrication.
+        st.info(
+            "SHAP explanation UNAVAILABLE — "
+            f"{_exp['reason']}. No attribution values are shown."
+        )
+
+st.markdown('<hr style="border-color:#1C2640;margin:0.8rem 0;">', unsafe_allow_html=True)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EVIDENCE-GATED MISSION DECISION
+# ═══════════════════════════════════════════════════════════════════════════════
+section_label("Mission Decision — Evidence Gated")
+render_decision_chain(st, active="POLICY CHECK")
+
+_prov = load_provenance()
+_artifacts_ok = bool(_prov and not _prov.get("note"))
+_decision = policy_check(prob_go, _artifacts_ok)
+render_policy_state(st, _decision)
+
+_pkg = build_evidence_package(
+    inputs={
+        "kp_index": kp, "f107_flux": flux, "gst_level": gst,
+        "x_class_flare": bool(xclass),
+    },
+    source="NASA DONKI / NOAA SWPC (scenario inputs)",
+    model_name=model_name,
+    model_sha256=(load_best_model_metadata() or {}).get("sha256"),
+    score=prob_go,
+    artifacts_ok=_artifacts_ok,
+)
+render_evidence_drawer(st, _pkg)
+st.caption(HUMAN_AUTHORITY_NOTICE)
 
 st.markdown('<hr style="border-color:#1C2640;margin:0.8rem 0;">', unsafe_allow_html=True)
 

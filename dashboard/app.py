@@ -38,20 +38,33 @@ from dashboard.components.utils import (
     load_metrics_summary,
     load_best_model_metadata,
     load_provenance,
+    load_active_model,
+    load_selected_model_name,
+    positive_class_column,
+    feature_importance_state,
     shap_top_n,
+    explainer_state,
     summarise_weather,
+)
+from dashboard.components.evidence import (
+    HUMAN_AUTHORITY_NOTICE,
+    build_evidence_package,
+    policy_check,
+    render_decision_chain,
+    render_evidence_drawer,
+    render_policy_state,
 )
 
 # ── Page configuration ────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="SWL · Mission Control",
+    page_title="Aevion SpaceOps · Mission Control",
     page_icon="🛸",
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
         "Get Help": "https://github.com/YOUR_USERNAME/space-weather-dashboard",
         "Report a bug": "https://github.com/YOUR_USERNAME/space-weather-dashboard/issues",
-        "About": "Space Weather Launch Probability Dashboard · August AI Builders Challenge with IBM Bob",
+        "About": "Aevion SpaceOps — AI mission-risk decisions with evidence, provenance, and human authority. August AI Builders Challenge with IBM Bob",
     },
 )
 
@@ -60,15 +73,10 @@ inject_design_system()
 # ── Shared resource loaders ───────────────────────────────────────────────────
 @st.cache_resource(show_spinner=False)
 def _load_model():
-    import joblib
-    for name in ["xgboost", "random_forest", "logistic_regression"]:
-        p = MODELS_DIR / f"{name}.joblib"
-        if p.exists():
-            model = joblib.load(p)
-            meta_p = MODELS_DIR / f"{name}_metadata.json"
-            meta = json.loads(meta_p.read_text()) if meta_p.exists() else {}
-            return model, name, meta
-    return None, None, {}
+    # Load the model recorded as the validation champion — and only that model.
+    # A preference order here is how the UI came to serve a different model than
+    # the one it named as champion.
+    return load_active_model()
 
 @st.cache_resource(show_spinner=False)
 def _load_explainer(model_name: str):
@@ -160,12 +168,15 @@ st.markdown(
     <div style="padding:1.2rem 0 0.4rem;" aria-label="Dashboard title">
       <div style="font-family:'Orbitron',monospace;font-size:clamp(1.1rem,2.5vw,1.9rem);
                   font-weight:800;letter-spacing:0.1em;color:#E8EDF5;line-height:1.15;">
-        SPACE WEATHER
-        <span style="color:#00D4FF;">LAUNCH PROBABILITY</span>
+        AEVION <span style="color:#00D4FF;">SPACEOPS</span>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:0.78rem;
+                  color:#8892A4;letter-spacing:0.06em;margin-top:6px;">
+        AI mission-risk decisions with evidence, provenance, and human authority
       </div>
       <div style="font-family:'IBM Plex Mono',monospace;font-size:0.72rem;
                   color:#4A5568;letter-spacing:0.2em;margin-top:4px;">
-        NASA DONKI · AI CLASSIFIER · REAL-TIME TELEMETRY
+        NASA DONKI · SPACE-WEATHER MODEL AS AN INPUT · HUMAN MISSION AUTHORITY
       </div>
     </div>
     """,
@@ -189,11 +200,14 @@ if model_loaded:
         feature_names=model_meta.get("feature_names"),
     )
     try:
-        prob_go = float(model.predict_proba(X_single)[0][1])
+        col = positive_class_column(model)
+        prob_go = float(model.predict_proba(X_single)[0][col])
     except Exception:
-        prob_go = 0.5
+        # An unavailable prediction is reported as unavailable, never as a
+        # coin-flip that renders like a real model output.
+        prob_go = None
 else:
-    prob_go   = 0.72
+    prob_go   = None
     feat_names = model_meta.get("feature_names") or [
         "kp_3d_avg","kp_7d_avg","flux_3d_avg","flux_7d_avg",
         "kp_lag1","kp_lag3","kp_lag7","xclass_72h","mclass_72h",
@@ -201,13 +215,25 @@ else:
     ]
     X_single = None
 
-verdict_txt = "GO" if prob_go >= 0.65 else "HOLD" if prob_go >= 0.40 else "SCRUB"
-gauge_color = "#00FF41" if prob_go >= 0.65 else "#FFD700" if prob_go >= 0.40 else "#FF4444"
+prediction_available = prob_go is not None
+verdict_txt = (
+    "UNAVAILABLE" if not prediction_available
+    else "GO" if prob_go >= 0.65 else "HOLD" if prob_go >= 0.40 else "SCRUB"
+)
+gauge_color = (
+    "#4A5568" if not prediction_available
+    else "#00FF41" if prob_go >= 0.65 else "#FFD700" if prob_go >= 0.40 else "#FF4444"
+)
 verdict_cls = {
     "GO":   "swl-verdict-go",
     "HOLD": "swl-verdict-hold",
     "SCRUB":"swl-verdict-scrub",
-}[verdict_txt]
+}.get(verdict_txt, "swl-verdict-hold")
+prob_line = (
+    "Prototype model score = UNAVAILABLE"
+    if not prediction_available
+    else f"Prototype model score = {prob_go:.3f}"
+)
 
 # ── Live weather fetch ────────────────────────────────────────────────────────
 with st.spinner(""):
@@ -273,7 +299,12 @@ st.markdown('<div aria-hidden="true" style="border-top:1px solid #1C2640;margin:
 col_gauge, col_params, col_verdict = st.columns([1.2, 1.4, 1])
 
 with col_gauge:
-    section_label("Launch Probability")
+    section_label("Prototype GO Score")
+    st.caption(
+        "Prototype GO Score — a model score, NOT a calibrated launch-success "
+        "probability. The training label is synthetic and independent of the "
+        "space-weather features."
+    )
     fig_gauge = go.Figure(go.Indicator(
         mode="gauge+number",
         value=round(prob_go * 100, 1),
@@ -330,12 +361,38 @@ with col_verdict:
         f'<div class="swl-verdict {verdict_cls}" style="font-size:1.1rem;padding:0.6rem 1.4rem;">'
         f'<span class="swl-orb {orb_cls}"></span>{verdict_txt}</div>'
         f'<div style="font-family:var(--font-mono,monospace);font-size:0.68rem;'
-        f'color:#4A5568;text-align:center;">p(GO) = {prob_go:.3f}</div>'
+        f'color:#4A5568;text-align:center;">{prob_line}</div>'
         f'<div style="font-family:var(--font-mono,monospace);font-size:0.62rem;'
-        f'color:#4A5568;text-align:center;">Model: {model_name or "demo"}</div>'
+        f'color:#4A5568;text-align:center;">SELECTED MODEL: {model_name or "UNAVAILABLE"}</div>'
         f'</div>',
         unsafe_allow_html=True,
     )
+
+st.markdown('<div aria-hidden="true" style="border-top:1px solid #1C2640;margin:0.8rem 0;"></div>',
+            unsafe_allow_html=True)
+
+# ── Evidence-gated mission decision ───────────────────────────────────────────
+# The model score is an input. What the product emits is a policy state with the
+# evidence that produced it, and a human holds the decision.
+section_label("Mission Decision — Evidence Gated")
+render_decision_chain(st, active="POLICY CHECK")
+
+_prov = load_provenance()
+_artifacts_ok = bool(_prov and not _prov.get("note"))
+_model_sha = (load_best_model_metadata() or {}).get("sha256")
+_decision = policy_check(prob_go if prediction_available else None, _artifacts_ok)
+render_policy_state(st, _decision)
+
+_pkg = build_evidence_package(
+    inputs={row["Parameter"]: row["Value"] for row in params_data},
+    source="NASA DONKI / NOAA SWPC",
+    model_name=model_name,
+    model_sha256=_model_sha,
+    score=prob_go if prediction_available else None,
+    artifacts_ok=_artifacts_ok,
+)
+render_evidence_drawer(st, _pkg)
+st.caption(HUMAN_AUTHORITY_NOTICE)
 
 st.markdown('<div aria-hidden="true" style="border-top:1px solid #1C2640;margin:0.8rem 0;"></div>',
             unsafe_allow_html=True)
@@ -404,45 +461,43 @@ with col_fi:
     meta = load_best_model_metadata()
     fi_names = meta.get("feature_names") or feat_names
 
-    importances = None
-    if model is not None:
-        from sklearn.pipeline import Pipeline as _Pipeline
-        _m = model[-1] if isinstance(model, _Pipeline) else model
-        if hasattr(_m, "feature_importances_"):
-            importances = _m.feature_importances_
-        elif hasattr(_m, "coef_"):
-            importances = np.abs(_m.coef_[0])
+    # Importances come from the fitted estimator or are declared UNAVAILABLE.
+    # The previous synthetic fallback published invented numbers under a real
+    # axis label, which is a fabricated measurement.
+    fi_state = feature_importance_state(model, fi_names)
 
-    if importances is not None and len(importances) == len(fi_names):
-        idx    = np.argsort(importances)[::-1][:10]
-        vals   = importances[idx]
-        labels = [fi_names[i] for i in idx]
+    if fi_state["status"] != "OK":
+        st.info(
+            "Feature Importance UNAVAILABLE — no importance vector could be "
+            "derived from the loaded model, so none is shown."
+        )
+        vals, labels = None, None
     else:
-        # Plausible synthetic fallback
-        labels = ["kp_3d_avg","flux_3d_avg","kp_lag1","cme_arrival_score",
-                  "gst_level","kp_7d_avg","xclass_72h","day_sin","hour_sin","mclass_72h"]
-        vals   = np.array([0.19,0.15,0.13,0.11,0.10,0.09,0.07,0.06,0.05,0.04])
+        _v = np.asarray(fi_state["values"], dtype=float)
+        idx    = np.argsort(_v)[::-1][:10]
+        vals   = _v[idx]
+        labels = [fi_state["names"][i] for i in idx]
 
-    fig_fi = go.Figure(go.Bar(
-        x=vals, y=labels, orientation="h",
-        marker=dict(
-            color=vals,
-            colorscale=[[0,"#1C2640"],[0.4,"#00D4FF"],[1.0,"#00FF41"]],
-            showscale=False,
-            line=dict(color="#0D1220", width=0.5),
-        ),
-        hovertemplate="<b>%{y}</b><br>Importance: %{x:.4f}<extra></extra>",
-    ))
-    fig_fi.update_layout(**plotly_dark_layout(
-        height=300,
-        xaxis_title="Importance",
-        yaxis=dict(autorange="reversed", gridcolor="#1C2640",
-                   linecolor="#1C2640", tickcolor="#4A5568"),
-    ))
-    st.plotly_chart(fig_fi, use_container_width=True,
-                    config={"displayModeBar": False})
-    if importances is None:
-        st.caption("⚠️ Synthetic importances — run notebook 04 to train model")
+    if labels is not None:
+        fig_fi = go.Figure(go.Bar(
+            x=vals, y=labels, orientation="h",
+            marker=dict(
+                color=vals,
+                colorscale=[[0,"#1C2640"],[0.4,"#00D4FF"],[1.0,"#00FF41"]],
+                showscale=False,
+                line=dict(color="#0D1220", width=0.5),
+            ),
+            hovertemplate="<b>%{y}</b><br>Importance: %{x:.4f}<extra></extra>",
+        ))
+        fig_fi.update_layout(**plotly_dark_layout(
+            height=300,
+            xaxis_title="Importance",
+            yaxis=dict(autorange="reversed", gridcolor="#1C2640",
+                       linecolor="#1C2640", tickcolor="#4A5568"),
+        ))
+        st.plotly_chart(fig_fi, use_container_width=True,
+                        config={"displayModeBar": False})
+        st.caption(f"Source: {fi_state['source']}")
 
 st.markdown('<div aria-hidden="true" style="border-top:1px solid #1C2640;margin:0.8rem 0;"></div>',
             unsafe_allow_html=True)
@@ -456,7 +511,8 @@ with col_shap:
     section_label("SHAP Explanation · Current Prediction")
     shap_computed = False
 
-    if model_loaded and model_name in ("xgboost", "random_forest") and X_single is not None:
+    _exp = explainer_state(model)
+    if _exp["available"] and X_single is not None:
         explainer = _load_explainer(model_name)
         if explainer is not None:
             try:
@@ -470,22 +526,15 @@ with col_shap:
             except Exception:
                 pass
 
-    if not shap_computed:
-        # Honest demo values derived from synthetic model behaviour
-        demo_shap = [
-            {"feature": "kp_3d_avg",         "shap_value": -0.1823},
-            {"feature": "flux_3d_avg",        "shap_value":  0.1102},
-            {"feature": "gst_level",          "shap_value": -0.0871},
-            {"feature": "xclass_72h",         "shap_value": -0.0644},
-            {"feature": "cme_arrival_score",  "shap_value": -0.0389},
-            {"feature": "kp_lag1",            "shap_value": -0.0312},
-            {"feature": "day_sin",            "shap_value":  0.0198},
-        ]
-        shap_bar_chart(demo_shap)
-        st.caption(
-            "⚠️ Illustrative SHAP values · run notebook 04 for model-backed explanations"
+    if shap_computed:
+        st.caption("▲ Green = increases the score · ▼ Red = decreases it")
+    else:
+        # No hardcoded SHAP vector: those numbers were never computed from this
+        # model, and presenting them as an explanation is a fabricated attribution.
+        st.info(
+            f"SHAP explanation UNAVAILABLE — {_exp['reason']}. "
+            "No attribution values are shown."
         )
-    st.caption("▲ Green = increases P(GO) · ▼ Red = decreases P(GO)")
 
 with col_prov:
     section_label("Data Provenance")
@@ -504,7 +553,9 @@ with col_prov:
     section_label("Model Metadata")
     metrics_sum = load_metrics_summary()
     if "note" not in metrics_sum:
-        best_name = metrics_sum.get("best_model","—")
+        # Champion identity comes from the shared selector so HOME, Model Lab
+        # and the Prediction Explorer cannot disagree about the served model.
+        best_name = load_selected_model_name() or metrics_sum.get("best_model", "—")
         st.markdown(
             f'<div style="font-family:var(--font-mono,monospace);font-size:0.72rem;'
             f'color:#4A5568;margin-bottom:8px;">Best model: '

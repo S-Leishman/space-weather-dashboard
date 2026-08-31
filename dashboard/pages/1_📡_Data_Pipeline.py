@@ -22,6 +22,10 @@ if str(ROOT) not in sys.path:
 from dashboard.components.theme import (
     inject_design_system, section_label, telemetry_table, plotly_dark_layout
 )
+# Canonical anchors. This page previously derived RAW_DIR/PROC_DIR from its own
+# location, which resolves one directory too high and made it report every
+# artifact MISSING while HOME simultaneously displayed those same artifacts.
+from dashboard.components.utils import PROC_DIR, RAW_DIR
 
 st.set_page_config(
     page_title="SWL · Data Pipeline",
@@ -29,9 +33,6 @@ st.set_page_config(
     layout="wide",
 )
 inject_design_system()
-
-RAW_DIR  = ROOT / "data" / "raw"
-PROC_DIR = ROOT / "data" / "processed"
 
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown(
