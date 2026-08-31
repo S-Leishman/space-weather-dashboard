@@ -10,10 +10,15 @@ Status: **SUBMISSION_CANDIDATE_READY**
 | Visibility | PUBLIC |
 | Default branch | `main` |
 | Release commit SHA | `33c0bbf70e365c986612e69cca300e7b96dc2028` |
+| Reviewable tip SHA | `e22f1c2a112a80b723bb795cc1e231b56b020f01` |
 | README renders publicly | Yes — HTTP 200 unauthenticated, title and `Known Limitations` present |
 
-Note: the release commit above is the pushed release candidate. This review file and
-`IBM-SUBMISSION-CANDIDATE.json` are committed on top of it as the review addendum.
+The release candidate is `33c0bbf`. Two commits sit on top of it: `af15fa3`, a one-line
+claim reduction that replaced "SHAP EXPLANATIONS" with "PROTOTYPE SCORING" in the Prediction
+Explorer footer (plus a human-factors doc), and `e22f1c2`, this review package. The claim
+reduction was re-checked after the fact — the coherence, guard, evidence-positioning, and
+frontend suites all pass on the tip, exit code 0 — and it strengthens rather than weakens
+assertion C.
 
 ## Test suite
 

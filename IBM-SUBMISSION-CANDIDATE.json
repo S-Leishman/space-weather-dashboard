@@ -7,6 +7,11 @@
     "visibility": "PUBLIC",
     "default_branch": "main",
     "release_commit_sha": "33c0bbf70e365c986612e69cca300e7b96dc2028",
+    "reviewable_tip_sha": "e22f1c2a112a80b723bb795cc1e231b56b020f01",
+    "commits_above_release": [
+      {"sha": "af15fa35ae608cf475cefbb9939370d5b89b0a0a", "summary": "one-line Prediction Explorer footer claim reduction (SHAP EXPLANATIONS -> PROTOTYPE SCORING) plus human-factors doc; re-verified, coherence/guard/evidence/frontend suites exit 0"},
+      {"sha": "e22f1c2a112a80b723bb795cc1e231b56b020f01", "summary": "this review package"}
+    ],
     "readme_renders_publicly": true,
     "readme_public_check": {
       "http_status": 200,
