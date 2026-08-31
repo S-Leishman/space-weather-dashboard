@@ -2,6 +2,7 @@
 
 **Deadline: 2026-08-31, 11:59 PM ET**
 **Compiled:** 2026-08-30 · **Lane:** RELEASE-INFRA-001
+**Revised:** 2026-08-31 · **Lane:** IBM-G1.5-EVIDENCE-REFERENCES — rows 3 and 11 and the CI section were stale; they asserted a private, empty repository and a workflow that had never run. Corrected against observed state.
 
 Every row states a real status backed by an artifact a reader can open. Nothing is marked complete on the assumption that it will be.
 
@@ -13,15 +14,15 @@ Every row states a real status backed by an artifact a reader can open. Nothing 
 |---|---|---|---|
 | 1 | Working prototype | **HOLD** | Runs and all 59 tests pass, but known rendering and metrics defects are under repair. See row 1 detail |
 | 2 | IBM SkillsBuild activity completion | **HOLD_EVIDENCE** | **Owner-only.** No completion evidence located. A prior Gmail search found no completion email. Not asserted as done |
-| 3 | Public GitHub repository | **HOLD** | A **PRIVATE** repository now exists at `S-Leishman/space-weather-dashboard`, but it is **empty** — the first push was rejected for a missing OAuth scope. See row 3 detail. Making it public is owner-gated |
+| 3 | Public GitHub repository | **PASS** | **PUBLIC** and populated at [`S-Leishman/space-weather-dashboard`](https://github.com/S-Leishman/space-weather-dashboard) — 68 tracked files on `main`. See row 3 detail |
 | 4 | README with all required sections | **PASS** | [`README.md`](README.md) — all five sections present. See section map below |
 | 5 | Published challenge project page | **NOT_STARTED** | **Owner-only.** Requires the public repository URL (row 3) and the video URL (row 6) |
 | 6 | Public video, ≤ 3 minutes | **NOT_STARTED** | **Owner-only.** Not recorded. Out of scope for this lane by instruction |
 | 7 | Owner clicks Publish before deadline | **NOT_STARTED** | **Owner-only.** Terminal, irreversible action |
 | 8 | License | **PASS** | [`LICENSE`](LICENSE) — MIT, plus a not-for-operational-use notice |
-| 9 | Pre-publication secret scan | **PASS** | [`SECRET_SCAN.md`](SECRET_SCAN.md) — clean. **Must be re-run before going public** |
+| 9 | Pre-publication secret scan | **PASS** | [`SECRET_SCAN.md`](SECRET_SCAN.md) plus a re-run after the code changes: [`SECRET_SCAN.json`](04_EVIDENCE/lanes/ibm-p0-correctness-001/SECRET_SCAN.json) — 48 text files scanned, `NO_FINDING` |
 | 10 | `.gitignore` protecting credentials | **PASS** | [`.gitignore`](.gitignore) — blocks `.env`, keys, `.streamlit/secrets.toml` before any commit exists |
-| 11 | CI pipeline | **HOLD** | Workflow file is valid but **has never executed**. Two defects found — see CI section |
+| 11 | CI pipeline | **PASS** | Executed and **green** on `main`: [run 33429736306](https://github.com/S-Leishman/space-weather-dashboard/actions/runs/33429736306) at `ed51c86`, 143 passed. See CI section |
 | 12 | Public deployment URL | **HOLD** | Scoped in [`DEPLOYMENT.md`](DEPLOYMENT.md), deliberately not executed. Gated on rows 1 and 3 |
 
 ### Row 1 detail — working prototype
@@ -30,23 +31,23 @@ The software path is verified: the Streamlit app serves HTTP 200 locally, the li
 
 It is **not** marked PASS because a page can load while displaying a wrong value. Defects under active repair at the time of writing include a raw-JavaScript rendering leak, an inverted probability column, ROC-AUC computed from hard labels instead of probabilities, a blank feature-importance chart, and the SHAP panel. This row flips to PASS only when those fixes land and an independent verifier confirms a correct run — not merely a run.
 
-### Row 3 detail — repository state and the push blocker
+### Row 3 detail — repository state
 
-Local git repository initialized and committed. Remote created **private** and wired as `origin`, but **nothing has been pushed yet**.
+Resolved. The repository is public, populated, and CI-enabled. Verified 2026-08-31:
 
 ```
 $ gh repo view S-Leishman/space-weather-dashboard --json visibility,isEmpty
-{"visibility":"PRIVATE","isEmpty":true}
+{"visibility":"PUBLIC","isEmpty":false}
 ```
 
 | | |
 |---|---|
-| Local branch | `main` (chosen so `.github/workflows/ci.yml` will actually trigger — see CI-1) |
-| Local HEAD | `f5ac06c` — `chore(release): initialize repository with release infrastructure` |
-| Files committed | 46 · working tree clean · no caches, logs, or credentials |
-| Remote | `https://github.com/S-Leishman/space-weather-dashboard` — **PRIVATE, EMPTY** |
+| Branch | `main` (matches the `.github/workflows/ci.yml` trigger — see CI-1) |
+| Remote `main` tip | `ed51c86` — `fix(donki): anchor replay fixture inside the repo` |
+| Files tracked on `main` | 68 · no caches, logs, or credentials |
+| Remote | `https://github.com/S-Leishman/space-weather-dashboard` — **PUBLIC, POPULATED** |
 
-**Blocker — missing `workflow` OAuth scope.** The push was rejected by GitHub:
+**Historical blocker, now cleared.** The first push was rejected because the `gh` token lacked the `workflow` scope and therefore could not create `.github/workflows/ci.yml`:
 
 ```
 ! [remote rejected] HEAD -> main
@@ -54,17 +55,7 @@ $ gh repo view S-Leishman/space-weather-dashboard --json visibility,isEmpty
    .github/workflows/ci.yml without `workflow` scope)
 ```
 
-The authenticated `gh` token holds `gist`, `read:org`, and `repo`, but not `workflow`, so it may not create a file under `.github/workflows/`. This is a GitHub-side protection, not a repository misconfiguration, and nothing is wrong with the commit.
-
-**Resolution is owner-only** because granting the scope requires an interactive browser authorization:
-
-```powershell
-gh auth refresh -h github.com -s workflow
-cd "<HOME>\Desktop\Aevion LLC\space-weather-dashboard"
-git push -u origin main
-```
-
-The repository stays private through this step. Roughly 2 minutes.
+The scope was granted and the push completed. This is retained as a record of what the obstacle was, not as a current status.
 
 ### Row 2 detail — IBM SkillsBuild
 
@@ -88,21 +79,27 @@ Supporting sections added or strengthened by this lane: `Status and claim ceilin
 
 ## CI honesty — requirement 11
 
-**A green CI badge must not be added to the README. There is nothing to be green about: the workflow has never run.**
+CI has now executed and is green on `main`. The earlier text in this section said the workflow had never run; that was true when written and is no longer true.
 
-Evidence, read-only, no workflows triggered or re-run:
+Observed result, not a prediction:
 
 ```
-$ gh api repos/S-Leishman/space-weather-dashboard
-gh: Not Found (HTTP 404)
+$ gh run list --repo S-Leishman/space-weather-dashboard --branch main --limit 1
+completed  success  CI  main  33429736306
 
-$ gh run list --repo S-Leishman/space-weather-dashboard --limit 5
-failed to get runs: HTTP 404: Not Found
+$ gh run view 33429736306 --log | tail -1
+======================= 143 passed in 103.56s (0:01:43) ========================
 ```
 
-The repository does not exist, so GitHub Actions has executed zero times. `.github/workflows/ci.yml` is syntactically valid and its logic is sound, but it is **untested in CI**.
+| | |
+|---|---|
+| Run | [33429736306](https://github.com/S-Leishman/space-weather-dashboard/actions/runs/33429736306) |
+| Commit | `ed51c86` |
+| Result | `success` — 143 passed, 0 failed |
 
-### CI-1 — Branch trigger mismatch (will silently never run)
+**Claim ceiling:** this is one green run of the `CI` workflow on `ubuntu-latest`, Python 3.11. It is evidence that the test suite passes in a clean checkout. It is not evidence about hosted runtime behaviour, and CI-2 below (unpinned dependencies) means a future run can go red without a code change.
+
+### CI-1 — Branch trigger mismatch (resolved)
 
 `.github/workflows/ci.yml` triggers on `main` only:
 
@@ -114,19 +111,19 @@ on:
     branches: [main]
 ```
 
-The parent estate repository's branch is `master`. If the new application repository is initialized with a `master` default branch, **CI will never fire and will report no status at all** — which reads as "no tests" to a reviewer, worse than a visible failure.
+The hazard was that a `master` default branch would never match this trigger, so CI would report no status at all — which reads as "no tests" to a reviewer, worse than a visible failure.
 
-**Fix:** name the default branch `main` when initializing (`git init -b main`), or add `master` to both branch lists. Naming it `main` is preferable — it matches the workflow and GitHub's default.
+**Resolved:** the default branch is `main`, it matches the trigger, and run 33429736306 confirms the workflow fires.
 
 ### CI-2 — Unpinned dependencies make CI non-deterministic
 
 The workflow runs `pip install -r requirements.txt`, where every dependency is `>=`. Two runs a week apart can install different versions, so CI can go red without any code change. The specific hazard is `numpy>=1.26.0` resolving to NumPy 2.x against older `shap`/`scikit-learn` wheels. Detail and fix in [`DEPLOYMENT.md`](DEPLOYMENT.md), Gap 8.
 
-### What CI would likely do today
+### What CI actually did
 
-Best available assessment, stated as an expectation rather than a result: the test job would **probably pass**. All 59 tests pass locally, and the one local failure is a Windows-only pytest temporary-directory cleanup `PermissionError` that occurs *after* every test reports green and does not arise on `ubuntu-latest`.
+This section previously carried a prediction that the job would "probably pass". That prediction has been superseded by an observed result and is replaced by it: **143 passed, 0 failed**, run 33429736306.
 
-This is a prediction from a local Linux-independent run, **not** an observed CI result. It becomes a fact only when a run appears in `gh run list`.
+One prior divergence is worth recording, because it is the reason CI was red four times today before this run. `dashboard/components/donki_replay.py` anchored its fixture path at `parents[3]`, the parent of the repository. Locally that directory happened to contain `04_EVIDENCE/`, so the suite passed; in a clean CI checkout the path did not exist, so it failed. The fixture is now committed inside the repository and the anchor is `parents[2]`, with a regression test in [`tests/test_donki_replay.py`](tests/test_donki_replay.py) asserting the path stays repo-relative. A local pass is not evidence about a clean clone unless the repository is self-contained.
 
 ## Owner-only actions, in order
 
@@ -135,11 +132,11 @@ Only Scott can perform these. Everything up to the irreversible line has been pr
 | Step | Action | Why only the owner | Est. |
 |---|---|---|---|
 | 1 | **Verify IBM SkillsBuild completion** in the SkillsBuild portal; capture a screenshot | Personal account credentials. Hard eligibility gate | 5 min |
-| 2 | **Grant the `workflow` OAuth scope and push** — `gh auth refresh -h github.com -s workflow` then `git push -u origin main`. Repository stays private | Interactive browser authorization. See row 3 detail | 2 min |
+| 2 | ~~Grant the `workflow` OAuth scope and push~~ — **DONE.** Scope granted, push completed, repository public and populated | Interactive browser authorization. See row 3 detail | done |
 | 3 | **Confirm the application fixes have landed** and an independent verifier reports a correct run | Do not publish a build that renders raw JavaScript | — |
 | 4 | **Authorize the re-run secret scan** result (procedure in [`SECRET_SCAN.md`](SECRET_SCAN.md)) | Code changed after the original scan | 2 min |
-| 4a | **Flip the repository to public** — `gh repo edit S-Leishman/space-weather-dashboard --visibility public --accept-visibility-change-consequences` | **IRREVERSIBLE.** A public repository can be cloned and cached within seconds; reverting visibility does not recall the copies | 1 min |
-| 5 | **Confirm CI is green** on the public repository | Verify before claiming | 3 min |
+| 4a | ~~Flip the repository to public~~ — **DONE.** `visibility: PUBLIC`, verified 2026-08-31. This step was irreversible and has been taken | **IRREVERSIBLE, ALREADY EXECUTED** | done |
+| 5 | ~~Confirm CI is green~~ — **DONE.** Run 33429736306 on `ed51c86`, 143 passed | Verify before claiming | done |
 | 6 | **Deploy to Streamlit Community Cloud** — steps 5–8 of [`DEPLOYMENT.md`](DEPLOYMENT.md) | Requires his GitHub-linked Streamlit account | 10 min + build |
 | 7 | **Verify the live URL in a browser** — every page, no raw JavaScript, charts draw, live data returns | This is the last chance to catch a broken public deployment | 5 min |
 | 8 | **Record and upload the video**, ≤ 3 minutes, publicly accessible | Requires his voice, screen, and account | 20–30 min |
@@ -148,7 +145,9 @@ Only Scott can perform these. Everything up to the irreversible line has been pr
 
 Steps 1 and 8 are the two that cannot be shortened and do not depend on anything else — they can be done in parallel with the fix work, and doing so is the best use of the remaining time.
 
-## Hard stop — what this lane did not do, by instruction
+## Hard stop — what the RELEASE-INFRA-001 lane did not do, by instruction
+
+Scoped to that lane as of 2026-08-30. The visibility flip and push were performed later by the owner, so the first bullet describes that lane's restraint, not the repository's current state.
 
 - Did **not** change any repository from private to public
 - Did **not** deploy to any public URL

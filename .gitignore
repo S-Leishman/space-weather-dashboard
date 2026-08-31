@@ -50,6 +50,13 @@ data/processed/
 *.parquet
 !dashboard/models/*.joblib
 
+# These two processed tables are cited by name in FINAL_REVIEW.md and
+# IBM-SUBMISSION-CANDIDATE.json, so they must resolve in a fresh clone.
+# Tracked deliberately (83 KB combined); the blanket *.parquet rule above
+# still excludes everything else.
+!dashboard/data/processed/daily_master.parquet
+!dashboard/data/processed/features_v1.parquet
+
 # ── Runtime logs ─────────────────────────────────────────────────────────────
 *.log
 streamlit_stdout.log
