@@ -29,7 +29,7 @@
   "n_validation_positive": 12,
   "n_validation_negative": 6,
   "proba_column": 1,
-  "model_file": "C:\\Users\\Scott\\Desktop\\Aevion LLC\\space-weather-dashboard\\dashboard\\models\\xgboost.joblib",
+  "model_file": "dashboard/models/xgboost.joblib",
   "sha256": "19edd364420c595e2234911273180a7c19a568dc461053cf1d4f80d33625e65b",
   "saved_at": "2026-08-30T22:55:33.419925+00:00"
 }

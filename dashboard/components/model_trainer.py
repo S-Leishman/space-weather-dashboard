@@ -45,6 +45,7 @@ MODELS_DIR = Path(__file__).parent.parent / "models"
 # Captured at import so a monkeypatch of MODELS_DIR cannot move the guard's
 # notion of "the packaged production artifact directory".
 PACKAGED_MODELS_DIR = (Path(__file__).parent.parent / "models").resolve()
+REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 PROC_DIR   = Path(__file__).parent.parent / "data" / "processed"
 MODELS_DIR.mkdir(parents=True, exist_ok=True)
 _PACKAGED_MODELS_DIR = PACKAGED_MODELS_DIR  # backwards-compatible alias
@@ -177,6 +178,23 @@ def cross_validated_auc(model_factory, X: np.ndarray, y: np.ndarray,
     }
 
 
+def _portable_model_path(dest: Path) -> str:
+    """
+    Path to record in metadata for a saved artifact.
+
+    Artifacts inside the repository are recorded repository-relative with
+    forward slashes: an absolute path would publish the build machine's
+    username and directory layout in a public repository, and would not
+    resolve for anyone who clones it. Artifacts written outside the
+    repository (isolated test runs) keep their absolute path, which is the
+    only form that identifies them unambiguously.
+    """
+    try:
+        return dest.resolve().relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        return str(dest)
+
+
 def _save_model(model, name: str, metadata: dict, models_dir: Path | None = None) -> Path:
     dest_dir = Path(models_dir) if models_dir is not None else MODELS_DIR
     # Contamination guard. Under pytest, writing into the packaged production
@@ -192,7 +210,7 @@ def _save_model(model, name: str, metadata: dict, models_dir: Path | None = None
     dest = dest_dir / f"{name}.joblib"
     joblib.dump(model, dest)
     meta_path = dest_dir / f"{name}_metadata.json"
-    metadata["model_file"] = str(dest)
+    metadata["model_file"] = _portable_model_path(dest)
     metadata["sha256"] = _sha256(dest)
     metadata["saved_at"] = datetime.now(timezone.utc).isoformat()
     meta_path.write_text(json.dumps(metadata, indent=2))

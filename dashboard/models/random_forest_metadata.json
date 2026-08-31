@@ -34,7 +34,7 @@
   "n_validation_positive": 12,
   "n_validation_negative": 6,
   "proba_column": 1,
-  "model_file": "C:\\Users\\Scott\\Desktop\\Aevion LLC\\space-weather-dashboard\\dashboard\\models\\random_forest.joblib",
+  "model_file": "dashboard/models/random_forest.joblib",
   "sha256": "9f3611e9db63d158a34c1292d3cb2696bf582f7336d732ff1fee55816d116b85",
   "saved_at": "2026-08-30T22:55:09.069837+00:00"
 }
