@@ -169,6 +169,48 @@ def render_policy_state(st, decision: dict) -> None:
         st.caption(f"• {r}")
 
 
+def render_artifact_receipt_banner(
+    st,
+    *,
+    model_name: str | None,
+    model_sha256: str | None,
+    provenance: dict,
+    receipt_sha256: str | None = None,
+    verification: str | None = None,
+) -> None:
+    """Judge-facing artifact strip under the hero.
+
+    Only artifact-backed fields already loaded from disk are shown. No hardware
+    attestation, HSM, or Zymkey claims — those require a separate qualified lane.
+    """
+    prov_ok = bool(provenance and "note" not in provenance)
+    feat_sha = provenance.get("sha256") if prov_ok else None
+    ver = verification or (
+        "VERIFIED" if prov_ok and model_sha256 else "UNVERIFIED"
+    )
+
+    def trunc(value: str | None) -> str:
+        if not value:
+            return "UNAVAILABLE"
+        return f"{value[:16]}…" if len(value) > 16 else value
+
+    receipt = trunc(receipt_sha256) if receipt_sha256 else "PENDING"
+    st.markdown(
+        '<div class="swl-receipt-banner" aria-label="Artifact receipt strip">'
+        f'<span>MODEL · {model_name or "UNAVAILABLE"}</span>'
+        f'<span class="swl-receipt-sep">|</span>'
+        f'<span>MODEL SHA · {trunc(model_sha256)}</span>'
+        f'<span class="swl-receipt-sep">|</span>'
+        f'<span>FEATURES SHA · {trunc(feat_sha)}</span>'
+        f'<span class="swl-receipt-sep">|</span>'
+        f'<span>VERIFICATION · {ver}</span>'
+        f'<span class="swl-receipt-sep">|</span>'
+        f'<span>RECEIPT SHA · {receipt}</span>'
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+
 def render_evidence_drawer(st, package: dict) -> None:
     """Small, real evidence drawer. Every value shown is a value we computed."""
     state = package["result"]["state"]

@@ -345,6 +345,32 @@ hr {
   text-shadow: 0 0 8px rgba(255,68,68,0.3);
 }
 
+/* Artifact receipt strip — judge-facing provenance under hero */
+.swl-receipt-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  background: rgba(0, 212, 255, 0.04);
+  border: 1px solid rgba(0, 212, 255, 0.18);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.75rem;
+  margin: 0.25rem 0 0.85rem;
+}
+
+.swl-receipt-banner span {
+  white-space: nowrap;
+}
+
+.swl-receipt-sep {
+  color: var(--border-dim);
+  opacity: 0.7;
+}
+
 /* Condition orb */
 .swl-orb {
   display: inline-block;

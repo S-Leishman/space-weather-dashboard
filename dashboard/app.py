@@ -50,6 +50,7 @@ from dashboard.components.evidence import (
     HUMAN_AUTHORITY_NOTICE,
     build_evidence_package,
     policy_check,
+    render_artifact_receipt_banner,
     render_decision_chain,
     render_evidence_drawer,
     render_policy_state,
@@ -160,35 +161,11 @@ with st.sidebar:
 
 cme_score = cme_speed * math.cos(math.radians(cme_angle)) if cme_speed > 0 else 0.0
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# HERO HEADER
-# ═══════════════════════════════════════════════════════════════════════════════
-st.markdown(
-    """
-    <div style="padding:1.2rem 0 0.4rem;" aria-label="Dashboard title">
-      <div style="font-family:'Orbitron',monospace;font-size:clamp(1.1rem,2.5vw,1.9rem);
-                  font-weight:800;letter-spacing:0.1em;color:#E8EDF5;line-height:1.15;">
-        AEVION <span style="color:#00D4FF;">SPACEOPS</span>
-      </div>
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:0.78rem;
-                  color:#8892A4;letter-spacing:0.06em;margin-top:6px;">
-        AI mission-risk decisions with evidence, provenance, and human authority
-      </div>
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:0.72rem;
-                  color:#4A5568;letter-spacing:0.2em;margin-top:4px;">
-        NASA DONKI · SPACE-WEATHER MODEL AS AN INPUT · HUMAN MISSION AUTHORITY
-      </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-# ── Model + prediction ────────────────────────────────────────────────────────
+# ── Model + prediction (before hero strip so receipt is artifact-backed) ───────
 model, model_name, model_meta = _load_model()
 model_loaded = model is not None
 
 if model_loaded:
-    st.warning("Prototype model artifact: generated from synthetic test data; not operationally qualified.")
     X_single, feat_names = build_single_feature_vector(
         kp=kp_input, f10_7=flux_input,
         launch_hour=hour_input,
@@ -214,6 +191,62 @@ else:
         "cme_arrival_score","gst_level","day_sin","day_cos","hour_sin","hour_cos",
     ]
     X_single = None
+
+_banner_prov = load_provenance()
+_banner_artifacts_ok = bool(_banner_prov and not _banner_prov.get("note"))
+_banner_model_sha = (load_best_model_metadata() or {}).get("sha256")
+_banner_inputs = {
+    "Kp Index": f"{kp_input:.1f}",
+    "F10.7 Flux": f"{flux_input:.0f}",
+    "Launch Hour": f"{hour_input:02d}:00",
+    "Storm Level": f"G{gst_input}",
+    "CME Speed": str(cme_speed),
+    "X-flare 72h": "YES" if xclass_flag else "NO",
+    "M-flare 72h": "YES" if mclass_flag else "NO",
+}
+_banner_pkg = build_evidence_package(
+    inputs=_banner_inputs,
+    source="NASA DONKI / NOAA SWPC",
+    model_name=model_name,
+    model_sha256=_banner_model_sha,
+    score=prob_go if prob_go is not None else None,
+    artifacts_ok=_banner_artifacts_ok,
+)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# HERO HEADER
+# ═══════════════════════════════════════════════════════════════════════════════
+st.markdown(
+    """
+    <div style="padding:1.2rem 0 0.4rem;" aria-label="Dashboard title">
+      <div style="font-family:'Orbitron',monospace;font-size:clamp(1.1rem,2.5vw,1.9rem);
+                  font-weight:800;letter-spacing:0.1em;color:#E8EDF5;line-height:1.15;">
+        AEVION <span style="color:#00D4FF;">SPACEOPS</span>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:0.78rem;
+                  color:#8892A4;letter-spacing:0.06em;margin-top:6px;">
+        AI mission-risk decisions with evidence, provenance, and human authority
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:0.72rem;
+                  color:#4A5568;letter-spacing:0.2em;margin-top:4px;">
+        NASA DONKI · SPACE-WEATHER MODEL AS AN INPUT · HUMAN MISSION AUTHORITY
+      </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+render_artifact_receipt_banner(
+    st,
+    model_name=model_name,
+    model_sha256=_banner_model_sha,
+    provenance=_banner_prov,
+    receipt_sha256=_banner_pkg.get("receipt_sha256"),
+    verification=_banner_pkg.get("verification"),
+)
+
+if model_loaded:
+    st.warning("Prototype model artifact: generated from synthetic test data; not operationally qualified.")
 
 prediction_available = prob_go is not None
 verdict_txt = (
@@ -377,20 +410,13 @@ st.markdown('<div aria-hidden="true" style="border-top:1px solid #1C2640;margin:
 section_label("Mission Decision — Evidence Gated")
 render_decision_chain(st, active="POLICY CHECK")
 
-_prov = load_provenance()
-_artifacts_ok = bool(_prov and not _prov.get("note"))
-_model_sha = (load_best_model_metadata() or {}).get("sha256")
+_prov = _banner_prov
+_artifacts_ok = _banner_artifacts_ok
+_model_sha = _banner_model_sha
 _decision = policy_check(prob_go if prediction_available else None, _artifacts_ok)
 render_policy_state(st, _decision)
 
-_pkg = build_evidence_package(
-    inputs={row["Parameter"]: row["Value"] for row in params_data},
-    source="NASA DONKI / NOAA SWPC",
-    model_name=model_name,
-    model_sha256=_model_sha,
-    score=prob_go if prediction_available else None,
-    artifacts_ok=_artifacts_ok,
-)
+_pkg = _banner_pkg
 render_evidence_drawer(st, _pkg)
 st.caption(HUMAN_AUTHORITY_NOTICE)
 

@@ -123,3 +123,12 @@ def test_no_hardcoded_receipt_hash_literal_in_ui():
         src = path.read_text(encoding="utf-8")
         for m in re.finditer(r"[0-9a-f]{64}", src):
             pytest.fail(f"hardcoded sha256-looking literal in {path.name}: {m.group()[:16]}…")
+
+
+def test_home_renders_artifact_receipt_banner():
+    """Judge-facing provenance strip is visible under the hero, artifact-backed only."""
+    assert "render_artifact_receipt_banner" in APP_PY
+    low = APP_PY.lower()
+    assert "zymkey" not in low
+    assert "ml-dsa" not in low
+    assert "attestation" not in low
