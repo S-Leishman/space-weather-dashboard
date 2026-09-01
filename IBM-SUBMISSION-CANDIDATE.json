@@ -1,14 +1,37 @@
 {
-  "mission": "IBM-FINISH-TO-REVIEW-001",
-  "status": "HISTORICAL_SNAPSHOT",
-  "record_semantics": "Documentation-only snapshot. This file cannot state the SHA of the commit that contains it, so it deliberately records no reviewable tip. The authoritative final submission SHA lives in the external release receipt, outside this repository. Every SHA below is a historical reference to a commit that already existed when this record was written.",
+  "mission": "SUBMISSION-VET-001",
+  "status": "FINAL_CANDIDATE",
+  "record_semantics": "Freeze record for the reviewable tip. This file names the tip SHA of the commit that contains it after amend-before-push. CI on that tip is bound in the vet package after an independent gh run read-back, not claimed here. Historical SHAs 33c0bbf / e22f1c2 / 76a4fd05 and the 140-test snapshot are lineage only.",
+  "final_submission_sha": "TIP_PLACEHOLDER",
+  "pre_freeze_ci": {
+    "run_id": 33431949236,
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "76a4fd05cc9e92b31601971f66dbf395d10e0db8",
+    "verified_at_utc": "2026-08-31T19:41:35Z",
+    "url": "https://github.com/S-Leishman/space-weather-dashboard/actions/runs/33431949236",
+    "note": "Last independently-read green run before this freeze. Do not treat as CI on final_submission_sha."
+  },
+  "public_evidence_check": {
+    "verified_at_utc": "2026-08-31",
+    "readme_http": 200,
+    "browser_assets_http": {
+      "home.png": 200,
+      "about.png": 200,
+      "data_pipeline.png": 200,
+      "model_lab.png": 200,
+      "prediction_explorer.png": 200
+    },
+    "secret_scan": "NO_FINDING"
+  },
   "product": "Aevion SpaceOps — AI mission-risk decisions with evidence, provenance, and human authority",
   "repo": {
     "url": "https://github.com/S-Leishman/space-weather-dashboard",
     "visibility": "PUBLIC",
     "default_branch": "main",
-    "release_commit_sha": "33c0bbf70e365c986612e69cca300e7b96dc2028",
-    "commits_above_release": [
+    "release_commit_sha": "TIP_PLACEHOLDER",
+    "historical": [
+      {"sha": "33c0bbf70e365c986612e69cca300e7b96dc2028", "role": "earlier release candidate; superseded"},
       {"sha": "af15fa35ae608cf475cefbb9939370d5b89b0a0a", "summary": "one-line Prediction Explorer footer claim reduction (SHAP EXPLANATIONS -> PROTOTYPE SCORING) plus human-factors doc; re-verified, coherence/guard/evidence/frontend suites exit 0"},
       {"sha": "e22f1c2a112a80b723bb795cc1e231b56b020f01", "summary": "review package"},
       {"sha": "9848654", "summary": "Known Limitations disclosures: F10.7 derived from NOAA monthly solar-cycle indices so 3d/7d windows are not authentic short-window variability; Prediction Explorer collapses flux_3d_avg and flux_7d_avg onto one slider input; dashboard live path is NASA DONKI, not NOAA SWPC. Adds the Author block identifying the individual entrant."},
@@ -24,10 +47,10 @@
   },
   "tests": {
     "command": "python -m pytest -q",
-    "collected": 140,
+    "collected": 143,
     "exit_code": 0,
-    "verified_at_sha": "627f997e75cf09571771147e334503a78a2f2297",
-    "note": "Commits above the release commit change only README and docs, so the collected count is unchanged from the run recorded below. Re-verified at 627f997 with a unique basetemp: targeted P0 regression exit 0, full suite exit 0, all three model artifact digests MATCH against their metadata with repository-relative paths, tree unchanged and HEAD unmoved after verification.",
+    "verified_at_sha": "76a4fd05cc9e92b31601971f66dbf395d10e0db8",
+    "note": "Updated 2026-08-31 to reflect the final submission SHA. External CI run 33431949236 completed success on this exact SHA with 143 passed. The earlier HISTORICAL_SNAPSHOT recorded 140 tests at 627f997; that count is superseded by the current CI result.",
     "per_file": {
       "tests/test_crosspage_coherence.py": 17,
       "tests/test_crosspage_coherence_guards.py": 16,
