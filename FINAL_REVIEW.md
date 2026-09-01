@@ -1,6 +1,6 @@
 # FINAL REVIEW — Aevion SpaceOps submission candidate
 
-Status: **SUBMISSION_CANDIDATE_READY**
+Status: **SUBMISSION_CANDIDATE_READY_PENDING_OWNER_GATES**
 
 ## Repository
 
@@ -9,29 +9,29 @@ Status: **SUBMISSION_CANDIDATE_READY**
 | URL | https://github.com/S-Leishman/space-weather-dashboard |
 | Visibility | PUBLIC |
 | Default branch | `main` |
-| Release commit SHA | `33c0bbf70e365c986612e69cca300e7b96dc2028` |
-| Reviewable tip SHA | `e22f1c2a112a80b723bb795cc1e231b56b020f01` |
+| Reviewable tip SHA | this freeze commit (`docs(ibm): freeze certification docs to one reviewable tip`); hex bound in the vet package after independent GitHub read-back |
 | README renders publicly | Yes — HTTP 200 unauthenticated, title and `Known Limitations` present |
 
-The release candidate is `33c0bbf`. Two commits sit on top of it: `af15fa3`, a one-line
-claim reduction that replaced "SHAP EXPLANATIONS" with "PROTOTYPE SCORING" in the Prediction
-Explorer footer (plus a human-factors doc), and `e22f1c2`, this review package. The claim
-reduction was re-checked after the fact — the coherence, guard, evidence-positioning, and
-frontend suites all pass on the tip, exit code 0 — and it strengthens rather than weakens
-assertion C.
+This freeze commit is documentation-only. It supersedes earlier review SHAs `33c0bbf` /
+`e22f1c2` and the G1.5 tip `76a4fd05`. Those commits remain in history. They are not the
+reviewable tip.
+
+CI run `33431949236` completed `success` on `76a4fd05` with 143 passed. That run is the
+last independently-read green result **before** this freeze. The CI run on this freeze
+commit is bound in the vet package after an independent `gh run` read-back, not claimed here.
 
 ## Test suite
 
 | Field | Value |
 |---|---|
 | Command | `python -m pytest -q` (isolated `--basetemp`) |
-| Collected tests | 140 |
-| Exit code | **0** |
+| Collected tests | 143 |
+| Exit code | **0** (last independently-read CI: run 33431949236 on `76a4fd05`) |
 
-Per-file counts: `test_crosspage_coherence.py` 17, `test_crosspage_coherence_guards.py` 16,
-`test_dashboard_utils.py` 9, `test_donki_replay.py` 23, `test_evidence_positioning.py` 12,
+Per-file collected counts: `test_crosspage_coherence.py` 17, `test_crosspage_coherence_guards.py` 16,
+`test_dashboard_utils.py` 9, `test_donki_replay.py` 26, `test_evidence_positioning.py` 12,
 `test_features.py` 7, `test_frontend.py` 30, `test_ingestion.py` 6, `test_model.py` 7,
-`test_p0_regressions.py` 13.
+`test_p0_regressions.py` 13. Total 143.
 
 ## Five-page browser verification
 
@@ -111,7 +111,7 @@ No racing language anywhere in the README.
 
 ## Video shot list
 
-`docs/VIDEO_SHOT_LIST.md` — ≤3 minutes, bound to the release commit, with exact narration
+`docs/VIDEO_SHOT_LIST.md` — ≤3 minutes, bound to the reviewable tip, with exact narration
 and screen actions per beat. Screenshots captured for every beat:
 
 | Beat | Screenshot |

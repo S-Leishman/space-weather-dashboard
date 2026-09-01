@@ -82,3 +82,8 @@ desktop.ini
 # generated .joblib files into a public repository. Any --basetemp a future run
 # chooses is covered by the prefix; no new rule is needed per name.
 .pytest_*/
+
+# Submission vet package is filled locally and handed off as a ZIP.
+# Do not commit the working package into the freeze tree.
+AEVION_FULL_GREEN_VET_PACKAGE_v0.1/
+AEVION_FULL_GREEN_VET_PACKAGE_READY.zip

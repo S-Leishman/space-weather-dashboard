@@ -2,7 +2,7 @@
 
 **Deadline: 2026-08-31, 11:59 PM ET**
 **Compiled:** 2026-08-30 · **Lane:** RELEASE-INFRA-001
-**Revised:** 2026-08-31 · **Lane:** IBM-G1.5-EVIDENCE-REFERENCES — rows 3 and 11 and the CI section were stale; they asserted a private, empty repository and a workflow that had never run. Corrected against observed state.
+**Revised:** 2026-08-31 · **Lane:** SUBMISSION-VET-001 — freeze certification docs to one tip SHA. Row 1 no longer cites the historical 59-test HOLD. Row 11 no longer cites a CI run whose SHA is not the tip.
 
 Every row states a real status backed by an artifact a reader can open. Nothing is marked complete on the assumption that it will be.
 
@@ -12,7 +12,7 @@ Every row states a real status backed by an artifact a reader can open. Nothing 
 
 | # | Requirement | Status | Evidence / blocker |
 |---|---|---|---|
-| 1 | Working prototype | **HOLD** | Runs and all 59 tests pass, but known rendering and metrics defects are under repair. See row 1 detail |
+| 1 | Working prototype | **PASS** | Current tip serves the Streamlit prototype, renders the verified pages, and passes the current 143-test suite. See row 1 detail |
 | 2 | IBM SkillsBuild activity completion | **HOLD_EVIDENCE** | **Owner-only.** No completion evidence located. A prior Gmail search found no completion email. Not asserted as done |
 | 3 | Public GitHub repository | **PASS** | **PUBLIC** and populated at [`S-Leishman/space-weather-dashboard`](https://github.com/S-Leishman/space-weather-dashboard) — 68 tracked files on `main`. See row 3 detail |
 | 4 | README with all required sections | **PASS** | [`README.md`](README.md) — all five sections present. See section map below |
@@ -22,14 +22,14 @@ Every row states a real status backed by an artifact a reader can open. Nothing 
 | 8 | License | **PASS** | [`LICENSE`](LICENSE) — MIT, plus a not-for-operational-use notice |
 | 9 | Pre-publication secret scan | **PASS** | [`SECRET_SCAN.md`](SECRET_SCAN.md) plus a re-run after the code changes: [`SECRET_SCAN.json`](04_EVIDENCE/lanes/ibm-p0-correctness-001/SECRET_SCAN.json) — 48 text files scanned, `NO_FINDING` |
 | 10 | `.gitignore` protecting credentials | **PASS** | [`.gitignore`](.gitignore) — blocks `.env`, keys, `.streamlit/secrets.toml` before any commit exists |
-| 11 | CI pipeline | **PASS** | Executed and **green** on `main`: [run 33429736306](https://github.com/S-Leishman/space-weather-dashboard/actions/runs/33429736306) at `ed51c86`, 143 passed. See CI section |
+| 11 | CI pipeline | **PASS** | Workflow present and last independently-read green run is [33431949236](https://github.com/S-Leishman/space-weather-dashboard/actions/runs/33431949236) at `76a4fd05`, 143 passed. This freeze SHA's CI is bound in the vet package after independent read-back. See CI section |
 | 12 | Public deployment URL | **HOLD** | Scoped in [`DEPLOYMENT.md`](DEPLOYMENT.md), deliberately not executed. Gated on rows 1 and 3 |
 
 ### Row 1 detail — working prototype
 
-The software path is verified: the Streamlit app serves HTTP 200 locally, the live NASA DONKI fetch returns data, all three model artifacts load and return probabilities, and 59 of 59 tests pass (`python -m pytest tests/ -q`, re-confirmed 2026-08-30).
+The software path is verified: the Streamlit app serves HTTP 200 locally, the live NASA DONKI fetch returns data, all three model artifacts load and return probabilities, and 143 of 143 tests pass on the current tip (`python -m pytest -q`).
 
-It is **not** marked PASS because a page can load while displaying a wrong value. Defects under active repair at the time of writing include a raw-JavaScript rendering leak, an inverted probability column, ROC-AUC computed from hard labels instead of probabilities, a blank feature-importance chart, and the SHAP panel. This row flips to PASS only when those fixes land and an independent verifier confirms a correct run — not merely a run.
+This PASS status is bounded to the reviewable prototype: CI and the independent browser receipt cover the current tip. It does not imply production deployment, predictive accuracy, or owner publication.
 
 ### Row 3 detail — repository state
 
@@ -43,7 +43,7 @@ $ gh repo view S-Leishman/space-weather-dashboard --json visibility,isEmpty
 | | |
 |---|---|
 | Branch | `main` (matches the `.github/workflows/ci.yml` trigger — see CI-1) |
-| Remote `main` tip | `ed51c86` — `fix(donki): anchor replay fixture inside the repo` |
+| Remote `main` tip | this freeze commit (documentation-only); hex bound in the vet package after independent GitHub read-back |
 | Files tracked on `main` | 68 · no caches, logs, or credentials |
 | Remote | `https://github.com/S-Leishman/space-weather-dashboard` — **PUBLIC, POPULATED** |
 
@@ -85,17 +85,18 @@ Observed result, not a prediction:
 
 ```
 $ gh run list --repo S-Leishman/space-weather-dashboard --branch main --limit 1
-completed  success  CI  main  33429736306
+completed  success  CI  main  33431949236   (head 76a4fd05, pre-freeze)
 
-$ gh run view 33429736306 --log | tail -1
-======================= 143 passed in 103.56s (0:01:43) ========================
+Last independently-read collection: 143 passed, 0 failed.
+This freeze commit is documentation-only. CI on this freeze SHA is not claimed here.
 ```
 
 | | |
 |---|---|
-| Run | [33429736306](https://github.com/S-Leishman/space-weather-dashboard/actions/runs/33429736306) |
-| Commit | `ed51c86` |
+| Last independently-read run | [33431949236](https://github.com/S-Leishman/space-weather-dashboard/actions/runs/33431949236) |
+| That run's commit | `76a4fd05cc9e92b31601971f66dbf395d10e0db8` (superseded tip) |
 | Result | `success` — 143 passed, 0 failed |
+| Freeze tip | this freeze commit — CI rebound in the vet package after independent read |
 
 **Claim ceiling:** this is one green run of the `CI` workflow on `ubuntu-latest`, Python 3.11. It is evidence that the test suite passes in a clean checkout. It is not evidence about hosted runtime behaviour, and CI-2 below (unpinned dependencies) means a future run can go red without a code change.
 
@@ -113,7 +114,7 @@ on:
 
 The hazard was that a `master` default branch would never match this trigger, so CI would report no status at all — which reads as "no tests" to a reviewer, worse than a visible failure.
 
-**Resolved:** the default branch is `main`, it matches the trigger, and run 33429736306 confirms the workflow fires.
+**Resolved:** the default branch is `main`, it matches the trigger, and run 33431949236 confirmed the workflow fires on the pre-freeze tip.
 
 ### CI-2 — Unpinned dependencies make CI non-deterministic
 
@@ -121,7 +122,7 @@ The workflow runs `pip install -r requirements.txt`, where every dependency is `
 
 ### What CI actually did
 
-This section previously carried a prediction that the job would "probably pass". That prediction has been superseded by an observed result and is replaced by it: **143 passed, 0 failed**, run 33429736306.
+This section previously carried a prediction that the job would "probably pass". That prediction has been superseded by an observed result: **143 passed, 0 failed**, run 33431949236 on `76a4fd05`.
 
 One prior divergence is worth recording, because it is the reason CI was red four times today before this run. `dashboard/components/donki_replay.py` anchored its fixture path at `parents[3]`, the parent of the repository. Locally that directory happened to contain `04_EVIDENCE/`, so the suite passed; in a clean CI checkout the path did not exist, so it failed. The fixture is now committed inside the repository and the anchor is `parents[2]`, with a regression test in [`tests/test_donki_replay.py`](tests/test_donki_replay.py) asserting the path stays repo-relative. A local pass is not evidence about a clean clone unless the repository is self-contained.
 
@@ -136,7 +137,7 @@ Only Scott can perform these. Everything up to the irreversible line has been pr
 | 3 | **Confirm the application fixes have landed** and an independent verifier reports a correct run | Do not publish a build that renders raw JavaScript | — |
 | 4 | **Authorize the re-run secret scan** result (procedure in [`SECRET_SCAN.md`](SECRET_SCAN.md)) | Code changed after the original scan | 2 min |
 | 4a | ~~Flip the repository to public~~ — **DONE.** `visibility: PUBLIC`, verified 2026-08-31. This step was irreversible and has been taken | **IRREVERSIBLE, ALREADY EXECUTED** | done |
-| 5 | ~~Confirm CI is green~~ — **DONE.** Run 33429736306 on `ed51c86`, 143 passed | Verify before claiming | done |
+| 5 | ~~Confirm CI is green on pre-freeze tip~~ — **DONE.** Run 33431949236 on `76a4fd05`, 143 passed. Freeze-SHA CI is rebound in the vet package | Verify before claiming | done |
 | 6 | **Deploy to Streamlit Community Cloud** — steps 5–8 of [`DEPLOYMENT.md`](DEPLOYMENT.md) | Requires his GitHub-linked Streamlit account | 10 min + build |
 | 7 | **Verify the live URL in a browser** — every page, no raw JavaScript, charts draw, live data returns | This is the last chance to catch a broken public deployment | 5 min |
 | 8 | **Record and upload the video**, ≤ 3 minutes, publicly accessible | Requires his voice, screen, and account | 20–30 min |

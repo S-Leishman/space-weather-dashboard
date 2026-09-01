@@ -45,7 +45,7 @@ Browser verification on August 30, 2026 rendered Mission Control, Model Lab, and
 
 ## Automated Validation
 
-The local command below passes 59 tests:
+The local command below collects 143 tests on the frozen tree:
 
 ```powershell
 $env:PYTHONDONTWRITEBYTECODE = '1'

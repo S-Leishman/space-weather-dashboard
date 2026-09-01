@@ -2,7 +2,7 @@
   "mission": "SUBMISSION-VET-001",
   "status": "FINAL_CANDIDATE",
   "record_semantics": "Freeze record for the reviewable tip. This file names the tip SHA of the commit that contains it after amend-before-push. CI on that tip is bound in the vet package after an independent gh run read-back, not claimed here. Historical SHAs 33c0bbf / e22f1c2 / 76a4fd05 and the 140-test snapshot are lineage only.",
-  "final_submission_sha": "TIP_PLACEHOLDER",
+  "final_submission_sha": "BOUND_AFTER_PUSH",
   "pre_freeze_ci": {
     "run_id": 33431949236,
     "status": "completed",
@@ -29,7 +29,7 @@
     "url": "https://github.com/S-Leishman/space-weather-dashboard",
     "visibility": "PUBLIC",
     "default_branch": "main",
-    "release_commit_sha": "TIP_PLACEHOLDER",
+    "release_commit_sha": "BOUND_AFTER_PUSH",
     "historical": [
       {"sha": "33c0bbf70e365c986612e69cca300e7b96dc2028", "role": "earlier release candidate; superseded"},
       {"sha": "af15fa35ae608cf475cefbb9939370d5b89b0a0a", "summary": "one-line Prediction Explorer footer claim reduction (SHAP EXPLANATIONS -> PROTOTYPE SCORING) plus human-factors doc; re-verified, coherence/guard/evidence/frontend suites exit 0"},
@@ -50,12 +50,12 @@
     "collected": 143,
     "exit_code": 0,
     "verified_at_sha": "76a4fd05cc9e92b31601971f66dbf395d10e0db8",
-    "note": "Updated 2026-08-31 to reflect the final submission SHA. External CI run 33431949236 completed success on this exact SHA with 143 passed. The earlier HISTORICAL_SNAPSHOT recorded 140 tests at 627f997; that count is superseded by the current CI result.",
+    "note": "143 collected on the committed test tree (parametrize expansions included). Last independently-read CI: run 33431949236 on 76a4fd05. The earlier HISTORICAL_SNAPSHOT recorded 140 tests and under-counted test_donki_replay.py as 23 instead of 26.",
     "per_file": {
       "tests/test_crosspage_coherence.py": 17,
       "tests/test_crosspage_coherence_guards.py": 16,
       "tests/test_dashboard_utils.py": 9,
-      "tests/test_donki_replay.py": 23,
+      "tests/test_donki_replay.py": 26,
       "tests/test_evidence_positioning.py": 12,
       "tests/test_features.py": 7,
       "tests/test_frontend.py": 30,
